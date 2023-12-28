@@ -1,0 +1,4 @@
+aws_account_id: "{{ lookup('env', 'AWS_ACCOUNT_ID') }}"
+role_name: "{{ lookup('env', 'AWS_ROLE_NAME') | default('AssumedRole') }}"
+duration_seconds: "{{ lookup('env', 'AWS_DURATION_SECONDS') }}"
+region: "{{ lookup('env', 'AWS_REGION') }}"
