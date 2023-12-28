@@ -15,7 +15,9 @@ To run this playbook on your local machine, you must install the following prere
     - netaddr
 - jq
 
-You must also configure your local environment with your AWS credentials and you will also need to specify the ARN of the IAM role that your playbook will use to run provisioning tasks.  Your credentials must have permissions to assume this role.
+You must also configure your local environment with your AWS credentials and you will also need to specify
+the ARN of the IAM role that your playbook will use to run provisioning tasks.
+Your credentials must have permissions to assume this role.
 
 ### WSL2 Environment
 #### Setting up Ansible on WSL2 with Ubuntu
@@ -24,7 +26,7 @@ You must also configure your local environment with your AWS credentials and you
 
 First and foremost, ensure that WSL2 is operational on your machine. If not, refer to this [link](<WSL2_SETUP_LINK>) for guidance on setting up WSL2 with Ubuntu.
 
-#### Installing Ansible
+- Installing Ansible
 
 Install Ansible by executing the following commands in the terminal:
 
@@ -34,13 +36,17 @@ $ sudo apt install software-properties-common
 $ sudo add-apt-repository --yes --update ppa:ansible/ansible
 $ sudo apt install ansible
 ```
-Additionally, install the 'make' package:
+- Additionally, install the 'make' package:
 
 ```shell
 $ sudo apt install make
 ```
+
+- Install AWS CLI   [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
 **NOTE**
-To mitigate security risks associated with the 'ansible.cfg' file in the current directory, follow the guidelines provided in the Ansible documentation.
+To mitigate security risks associated with the 'ansible.cfg' file in the current directory,
+follow the guidelines provided in the Ansible documentation.
 
 If running locally, resolve the issue by exporting:
 ```shell
@@ -60,7 +66,9 @@ $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 
 ## Conventions
 
-- Environment specific settings should always be formatted `Config.<Parameter>` (e.g. `Config.VpcName`), unless you have environment specific settings for variables related to the [`aws-sts`](https://github.com/docker-production-aws/aws-sts) or [`aws-cloudformation`](https://github.com/docker-production-aws/aws-cloudformation) roles as defined below
+- Environment specific settings should always be formatted `Config.<Parameter>` (e.g. `Config.VpcName`),
+unless you have environment specific settings for variables related to the [`aws-sts`](https://github.com/docker-production-aws/aws-sts)
+or [`aws-cloudformation`](https://github.com/docker-production-aws/aws-cloudformation) roles as defined below
 
 - Variables related to configuring the aws-assume-role are formatted `Sts.<Parameter>` (e.g. `Sts.Role`)
 
