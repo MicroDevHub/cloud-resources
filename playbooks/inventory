@@ -1,0 +1,10 @@
+# Each environment must be defined here
+#
+# Ensure each environment follows the example below and also create a file
+# called group_vars/<environment>/vars.yml to hold environment specific settings
+
+# ansible_connection: it tells Ansible that win attempting to run Ansible tasks
+# against this environment, that means it should run these tasks on the local machine
+# rather than attempt to connect to a host that has name of our environment
+[npr]
+npr ansible_connection=local
