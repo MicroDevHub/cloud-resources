@@ -1,21 +1,16 @@
-#Use vars for static values:
-#
-#If you know the value of a variable before the playbook starts running and it doesn't change during the playbook execution, you can use vars.
-#Use set_fact for dynamic values:
-#
-#If the value of a variable depends on the result of a task or needs to be computed dynamically during playbook execution, use set_fact.
-
+#the key difference is the scope of the variable.
+# Variables defined in pre_tasks are limited to that section,
+# while variables defined in vars are globally available to all tasks in the playbook.
 ---
 - hosts: all
   gather_facts: yes
   vars:
     cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
 
-
   pre_tasks:
     - name: create stack facts
       set_fact:
-        cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
+        tbd: "placeholder"
 
   roles:
     - role: assume_aws_role
