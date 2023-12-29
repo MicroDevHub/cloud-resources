@@ -9,10 +9,13 @@
     set_fact:
       current_timestamp: "{{ (ansible_date_time.date + ansible_date_time.time) | regex_replace('[^\\d]','') }}"
 
+  - name: Debug cf_stack_template in pre_tasks
+    debug:
+      var: stack_name123
+
   - name: create stack facts
     set_fact:
       cf_stack_name: "{{ Stack.Name }}"
-      cf_stack_policy: "{{ Stack.Policy | default(cf_default_stack_policy) }}"
       cf_stack_tags: "{{ Stack.Tags | default({}) }}"
       cf_stack_globals: "{{ vars['hostvars'][env] | dotted_dict(paths=['AWS::']) }}"
       cf_job_path: "{{ Stack.Path | default('./build') }}"
@@ -23,6 +26,10 @@
       cf_stack_role: "{{ Stack.Role | default(None) }}"
       cf_s3_bucket: "{{ Stack.Bucket | default(None) }}"
       debug: "{{ debug | default(False) | bool }}"
+
+  - name: update stack facts
+    set_fact:
+      cf_stack_policy: "{{ cf_disable_stack_policy | ternary(Stack.Policy | default(cf_default_stack_policy), none) }}"
 
   - name: set build folder fact
     set_fact:

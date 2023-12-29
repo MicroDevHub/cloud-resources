@@ -3,7 +3,6 @@
 
 # aws-cloudformation role settings
 Stack.Name: cloud-resources
-Stack.Template: templates/cfn.yml.j2
 
 # By default the aws-cloudformation role expects your stack template
 # to be defined in the templates/stack.yml.j2 file

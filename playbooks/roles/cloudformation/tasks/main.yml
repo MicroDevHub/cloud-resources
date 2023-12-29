@@ -1,39 +1,21 @@
 ---
 - block:
     - import_tasks: init.yml
+
+- block:
+    - import_tasks: disable_policy.yml
+  when: cf_disable_stack_policy
+
+- block:
+    - import_tasks: generator.yml
     - import_tasks: s3.yml
+      when: cf_upload_s3
+    - import_tasks: cloudformation.yml
+  always:
+    - import_tasks: enable_policy.yml
+      when: cf_disable_stack_policy
+  when: not cf_delete_stack
 
 - block:
-    - name: set local path fact if s3 upload disabled
-      set_fact:
-        cf_stack_template_path: "{{ cf_stack_template_json }}"
-      when: not cf_upload_s3
-    - name: configure cloudformation stack
-      cloudformation:
-        stack_name: "{{ cf_stack_name }}"
-        stack_policy: "{{ cf_stack_policy_json }}"
-        state: present
-        template: "{{ cf_stack_template_path | default(omit) }}"
-        template_url: "{{ Stack.Url | default(omit) }}"
-        template_parameters: "{{ cf_stack_inputs }}"
-        disable_rollback: "{{ cf_disable_rollback | default(false) | bool }}"
-        role_arn: "{{ cf_stack_role | default(omit) }}"
-        tags: "{{ cf_stack_tags }}"
-      register: cf_stack_result
-  tags:
-    - deploy
-
-- block:
-    - name: get stack facts
-      amazon.aws.cloudformation_info:
-        stack_name: "{{ stack_name }}"
-        stack_resources: true
-      changed_when: false
-    - name: set stack facts
-      set_fact:
-        Stack: "{{ Stack | combine({ 'Facts': cloudformation[cf_stack_name] },recursive=True) }}"
-    - name: Stack.Facts variable
-      debug: msg={{ Stack.Facts }}
-      when: debug
-  tags:
-    - deploy
+    - import_tasks: delete.yml
+  when: cf_delete_stack

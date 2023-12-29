@@ -9,7 +9,8 @@
 - hosts: all
   gather_facts: yes
   vars:
-    stack_name: ''
+    cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
+
 
   pre_tasks:
     - name: create stack facts
@@ -18,13 +19,4 @@
 
   roles:
     - role: assume_aws_role
-    - role: disable_policy
-      when: cf_disable_stack_policy and not cf_delete_stack
-    - role: generator
-      when: not cf_delete_stack
     - role: cloudformation
-      when: not cf_delete_stack
-    - role: enable_policy
-      when: cf_disable_stack_policy and not cf_delete_stack
-    - role: delete
-      when: cf_delete_stack
