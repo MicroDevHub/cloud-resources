@@ -1,0 +1,30 @@
+#Use vars for static values:
+#
+#If you know the value of a variable before the playbook starts running and it doesn't change during the playbook execution, you can use vars.
+#Use set_fact for dynamic values:
+#
+#If the value of a variable depends on the result of a task or needs to be computed dynamically during playbook execution, use set_fact.
+
+---
+- hosts: all
+  gather_facts: yes
+  vars:
+    stack_name: ''
+
+  pre_tasks:
+    - name: create stack facts
+      set_fact:
+        cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
+
+  roles:
+    - role: assume_aws_role
+    - role: disable_policy
+      when: cf_disable_stack_policy and not cf_delete_stack
+    - role: generator
+      when: not cf_delete_stack
+    - role: cloudformation
+      when: not cf_delete_stack
+    - role: enable_policy
+      when: cf_disable_stack_policy and not cf_delete_stack
+    - role: delete
+      when: cf_delete_stack

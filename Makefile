@@ -27,12 +27,12 @@ environment/%:
 
 generate/%:
 	${INFO} "Generating templates for $*..."
-	@ ansible-playbook playbooks/assume_role_playbook.yml -e env=$* $(FLAGS) --tags generate -e debug=true
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* $(FLAGS) --tags generate -e debug=true
 	${INFO} "Generation complete"
 
 deploy/%:
 	${INFO} "Deploying environment $*..."
-	@ ansible-playbook playbooks/assume_role_playbook.yml -e env=$* $(FLAGS)
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* $(FLAGS)
 	${INFO} "Deployment complete"
 
 delete/%:
