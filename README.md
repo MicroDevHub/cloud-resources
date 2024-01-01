@@ -41,7 +41,7 @@ $ sudo apt install ansible
 $ sudo apt install make
 ```
 
-- Install AWS CLI   [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- Install AWS CLI [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 
 **NOTE**
 To mitigate security risks associated with the 'ansible.cfg' file in the current directory,
@@ -54,14 +54,18 @@ $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 
 ## How to add and run a new playbook
 
-1. Review `roles` folder and add or modify an role template if required
-2. Define environments in the [`inventory`](./playbooks/inventory) file and [`group_vars`](./playbooks/group_vars) folder.  Alternatively you can use the `make environment/<environment-name>` command.
-3. Define a CloudFormation stack name in [`group_vars/all/vars.yml`](./playbooks/group_vars/all/vars.yml) using the `Stack.Name` variable
-4. Add the ARN of the IAM role to assume in each environment by configuring the `Sts.Role` variable in `group_vars/<environment>/vars.yml`
-5. Define your CloudFormation template in `templates` folder.
-6. Define environment-specific configuration settings as required in `group_vars/<environment>/vars.yml`
-7. If you have stack inputs, define them using the syntax `Stack.Inputs.<Parameter>` in your environment settings file (e.g. `Stack.Inputs.MyInputParam: some-value`)
-8. Deploy your stack by running `make deploy/<environment>` (which executes `ansible-playbook site.yml -e env=<environment>`)
+### Environment Setup Guide
+
+1. **Review Roles:** Inspect the `roles` folder and adjust or create role templates as needed.
+2. **Define Environments:** Define environments in the [`inventory`](./playbooks/inventory) file and [`group_vars`](./playbooks/group_vars) folder. Alternatively, use `make environment/<environment-name>` to set up environments.
+3. **Configure IAM Role ARN:** In each environment, configure the IAM role ARN by setting the `Sts.Role` variable in `group_vars/<environment>/vars.yml`.
+4. **Create CloudFormation Stack:** Design a CloudFormation stack using a Jinja template located in [`playbooks/templates`](./playbooks/templates).
+5. **Create Playbook:** Develop a playbook YAML file in the [`playbooks`](./playbooks) directory.
+6. **Configure Environment Settings:** Define environment-specific configuration settings in `group_vars/<environment>/vars.yml` as necessary.
+7. **Define Stack Inputs:** If there are stack inputs, specify them in the environment settings file using the syntax `Stack.Inputs.<Parameter>`, e.g., `Stack.Inputs.MyInputParam: some-value`.
+8. **Add Make Commands:** Integrate make commands for the new playbook, covering both deployment and deletion.
+9. **Deploy Stack:** Execute `make deploy/<environment>` to deploy the stack (`ansible-playbook site.yml -e env=<environment>`).
+10. **Cleanup:** Ensure to include a command for deleting the stack, e.g., `make delete/<environment>`.
 
 ## Conventions
 
