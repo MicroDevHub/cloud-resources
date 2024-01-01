@@ -10,3 +10,21 @@ Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
 # environment specific settings are always prefixed with config_
 Stack.Inputs.MyStackInput: "{{ 10000 | random }}"
+
+# Here we define repositories for each of MicroDevHub release images
+Config.Repositories:
+  microdevhub/bookstore-service: {}
+
+# VPC Configuration
+#Config.Vpcs:
+#  Default:
+#    Cidr: 192.168.0.0/20
+#    Domain: microdevhub.org
+#    SubnetSize: 24
+#    AzCount: 2
+#    PublicSubnets:
+#      - public
+#    PrivateSubnets:
+#      - medium
+#      - high
+#      - management

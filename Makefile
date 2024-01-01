@@ -10,11 +10,6 @@ include Makefile.settings
 
 .PHONY: roles environment generate deploy delete
 
-roles:
-	${INFO} "Installing Ansible roles from roles/requirements.yml..."
-	@ ansible-galaxy install -r roles/requirements.yml --force
-	${INFO} "Installation complete"
-
 # This step will automatically create a new group_vars
 # eg command: make environment/npr
 environment/%:
@@ -30,12 +25,12 @@ generate/%:
 	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* $(FLAGS) --tags generate -e debug=true
 	${INFO} "Generation complete"
 
-deploy/%:
+base-resource/%:
 	${INFO} "Deploying environment $*..."
 	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* $(FLAGS)
 	${INFO} "Deployment complete"
 
-delete/%:
+base-resource-delete/%:
 	${INFO} "Deleting environment $*..."
-	@ ansible-playbook playbooks/site.yml -e env=$* -e 'Stack.Delete=true' $(FLAGS)
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e 'Stack.Delete=true' $(FLAGS)
 	${INFO} "Delete complete"

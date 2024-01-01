@@ -7,7 +7,7 @@
     - name: configure cloudformation stack
       cloudformation:
         stack_name: "{{ cf_stack_name }}"
-        stack_policy: "{{ cf_stack_policy_json }}"
+#        stack_policy: "{{ cf_stack_policy_json }}"
         state: present
         template: "{{ cf_stack_template_path | default(omit) }}"
         template_url: "{{ Stack.Url | default(omit) }}"
@@ -21,13 +21,14 @@
 
 - block:
     - name: get stack facts
-      cloudformation_info:
+      amazon.aws.cloudformation_info:
         stack_name: "{{ cf_stack_name }}"
         stack_resources: true
       changed_when: false
+      register: my_stack
     - name: set stack facts
       set_fact:
-        Stack: "{{ Stack | combine({ 'Facts': cloudformation[cf_stack_name] },recursive=True) }}"
+        Stack: "{{ Stack | combine({ 'Facts': my_stack.cloudformation[cf_stack_name] },recursive=True) }}"
     - name: Stack.Facts variable
       debug: msg={{ Stack.Facts }}
       when: debug

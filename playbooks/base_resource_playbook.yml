@@ -1,4 +1,4 @@
-#the key difference is the scope of the variable.
+# The key difference is the scope of the variable.
 # Variables defined in pre_tasks are limited to that section,
 # while variables defined in vars are globally available to all tasks in the playbook.
 ---
@@ -6,6 +6,7 @@
   gather_facts: yes
   vars:
     cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
+    cf_stack_name: "base-resource"
 
   pre_tasks:
     - name: create stack facts

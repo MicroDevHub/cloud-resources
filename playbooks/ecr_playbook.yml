@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: yes
+  vars:
+    cf_stack_template: "{{ Stack.Template | default('./templates/ecr.yml.j2') }}"
+
+  roles:
+    - role: assume_aws_role
+    - role: cloudformation

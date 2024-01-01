@@ -11,9 +11,8 @@ To run this playbook on your local machine, you must install the following prere
 - Python PIP package manager
 - The following PIP packages:
     - awscli
+    - botocore
     - boto3
-    - netaddr
-- jq
 
 You must also configure your local environment with your AWS credentials and you will also need to specify
 the ARN of the IAM role that your playbook will use to run provisioning tasks.
