@@ -70,8 +70,7 @@ $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 ## Conventions
 
 - Environment specific settings should always be formatted `Config.<Parameter>` (e.g. `Config.VpcName`),
-unless you have environment specific settings for variables related to the [`aws-sts`](https://github.com/docker-production-aws/aws-sts)
-or [`aws-cloudformation`](https://github.com/docker-production-aws/aws-cloudformation) roles as defined below
+unless you have environment specific settings for variables related to the roles as defined below
 
 - Variables related to configuring the aws-assume-role are formatted `Sts.<Parameter>` (e.g. `Sts.Role`)
 
