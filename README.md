@@ -21,7 +21,7 @@ Your credentials must have permissions to assume this role.
 ### WSL2 Environment
 #### Setting up Ansible on WSL2 with Ubuntu
 
-#### Prerequisites
+- Prerequisites
 
 First and foremost, ensure that WSL2 is operational on your machine. If not, refer to this [link](<WSL2_SETUP_LINK>) for guidance on setting up WSL2 with Ubuntu.
 
@@ -41,14 +41,13 @@ $ sudo apt install ansible
 $ sudo apt install make
 ```
 
-- Install AWS CLI [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-
+- Install AWS CLI [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
+```
 **NOTE**
 To mitigate security risks associated with the 'ansible.cfg' file in the current directory,
 follow the guidelines provided in the Ansible documentation.
 
 If running locally, resolve the issue by exporting:
-```shell
 $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 ```
 
