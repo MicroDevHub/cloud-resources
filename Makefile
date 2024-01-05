@@ -13,11 +13,11 @@ include Makefile.settings
 # This step will automatically create a new group_vars
 # eg command: make environment/npr
 environment/%:
-	@ mkdir -p group_vars/$*
-	@ touch group_vars/$*/vars.yml
-	@ echo >> inventory
-	@ echo '[$*]' >> inventory
-	@ echo '$* ansible_connection=local' >> inventory
+	@ mkdir -p playbooks/group_vars/$*
+	@ touch playbooks/group_vars/$*/vars.yml
+	@ echo >> playbooks/inventory
+	@ echo '[$*]' >> playbooks/inventory
+	@ echo '$* ansible_connection=local' >> playbooks/inventory
 	${INFO} "Created environment $*"
 
 generate/%:
@@ -26,11 +26,11 @@ generate/%:
 	${INFO} "Generation complete"
 
 base-resource/%:
-	${INFO} "Deploying base-resource environment $* with Stack.Delete=$(TO_BE_DELETED)..."
-	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e Stack.Delete=$(TO_BE_DELETED) $(FLAGS)
+	${INFO} "Deploying base-resource environment $* with Stack.Delete=$(IS_DELETED)..."
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
 	${INFO} "Deploying base-resource complete"
 
 ecr-resource/%:
-	${INFO} "Deploying ecr-resource environment $* with Stack.Delete=$(TO_BE_DELETED)..."
-	@ ansible-playbook playbooks/ecr_playbook.yml -e env=$* -e Stack.Delete=$(TO_BE_DELETED) $(FLAGS)
+	${INFO} "Deploying ecr-resource environment $* with Stack.Delete=$(IS_DELETED)..."
+	@ ansible-playbook playbooks/ecr_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
 	${INFO} "Deploying ecr-resource complete"
