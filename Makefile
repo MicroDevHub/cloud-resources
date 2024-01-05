@@ -26,11 +26,11 @@ generate/%:
 	${INFO} "Generation complete"
 
 base-resource/%:
-	${INFO} "Deploying environment $*..."
-	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* $(FLAGS)
-	${INFO} "Deployment complete"
+	${INFO} "Deploying base-resource environment $* with Stack.Delete=$(TO_BE_DELETED)..."
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e Stack.Delete=$(TO_BE_DELETED) $(FLAGS)
+	${INFO} "Deploying base-resource complete"
 
-base-resource-delete/%:
-	${INFO} "Deleting environment $*..."
-	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e 'Stack.Delete=true' $(FLAGS)
-	${INFO} "Delete complete"
+ecr-resource/%:
+	${INFO} "Deploying ecr-resource environment $* with Stack.Delete=$(TO_BE_DELETED)..."
+	@ ansible-playbook playbooks/ecr_playbook.yml -e env=$* -e Stack.Delete=$(TO_BE_DELETED) $(FLAGS)
+	${INFO} "Deploying ecr-resource complete"

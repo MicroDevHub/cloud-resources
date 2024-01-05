@@ -3,17 +3,13 @@
 
 # aws-sts settings
 # At a minimum you must specify the ARN of the IAM role
-# that should be assumed to run your provisinoing tasks
+# that should be assumed to run your provisioning tasks
 # e.g. Sts.Role: arn:aws:iam::012345678901:role/admin
 # Sts.Role: <ARN of your IAM role>
 Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
 # environment specific settings are always prefixed with config_
 Stack.Inputs.MyStackInput: "{{ 10000 | random }}"
-
-# Here we define repositories for each of MicroDevHub release images
-Config.Repositories:
-  microdevhub/bookstore-service: {}
 
 # VPC Configuration
 #Config.Vpcs:

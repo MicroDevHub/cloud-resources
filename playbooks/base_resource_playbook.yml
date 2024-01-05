@@ -6,7 +6,7 @@
   gather_facts: yes
   vars:
     cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
-    cf_stack_name: "base-resource"
+    cf_stack_name: "base-resource-{{ env }}"
 
   pre_tasks:
     - name: create stack facts
