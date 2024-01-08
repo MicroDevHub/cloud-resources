@@ -23,7 +23,7 @@ Your credentials must have permissions to assume this role.
 
 - Prerequisites
 
-First and foremost, ensure that WSL2 is operational on your machine. If not, refer to this [link](<WSL2_SETUP_LINK>) for guidance on setting up WSL2 with Ubuntu.
+First and foremost, ensure that WSL2 is operational on your machine. If not, refer to this [link](<https://www.notion.so/Setup-WSL-on-Window-5b16441ea01a4d75b5953ea79fd05ca1?pvs=4>) for guidance on setting up WSL2 with Ubuntu.
 
 - Installing Ansible
 
