@@ -16,7 +16,7 @@ To run this playbook on your local machine, you must install the following prere
 
 You must also configure your local environment with your AWS credentials and you will also need to specify
 the ARN of the IAM role that your playbook will use to run provisioning tasks.
-Your credentials must have permissions to assume this role.
+Your credentials must have permission to assume this role.
 
 ### WSL2 Environment
 #### Setting up Ansible on WSL2 with Ubuntu
@@ -42,8 +42,9 @@ $ sudo apt install make
 ```
 
 - Install AWS CLI [`LINK`](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).
-```
+
 **NOTE**
+```
 To mitigate security risks associated with the 'ansible.cfg' file in the current directory,
 follow the guidelines provided in the Ansible documentation.
 
@@ -63,13 +64,20 @@ $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 6. **Configure Environment Settings:** Define environment-specific configuration settings in `group_vars/<environment>/vars.yml` as necessary.
 7. **Define Stack Inputs:** If there are stack inputs, specify them in the environment settings file using the syntax `Stack.Inputs.<Parameter>`, e.g., `Stack.Inputs.MyInputParam: some-value`.
 8. **Add Make Commands:** Integrate make commands for the new playbook, covering both deployment and deletion.
-9. **Deploy Stack:** Execute `make deploy/<environment>` to deploy the stack (`ansible-playbook site.yml -e env=<environment>`).
-10. **Cleanup:** Ensure to include a command for deleting the stack, e.g., `make delete/<environment>`.
+9. **Deploy/Cleanup:** Ensure to include a command for deploying or deleting the stack, e.g.
+     `base-resource/%:
+	${INFO} "Deploying base-resource environment $* with Stack.Delete=$(IS_DELETED)..."
+	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
+	${INFO} "Deploying base-resource complete"`
+
+   After that, we can use the following command to deploy: `make base-resource/<environment>`.
+
+   OR clean up the resource `make base-resource/<environment> IS_DELETED=TRUE`.
 
 ## Conventions
 
-- Environment specific settings should always be formatted `Config.<Parameter>` (e.g. `Config.VpcName`),
-unless you have environment specific settings for variables related to the roles as defined below
+- Environment-specific settings should always be formatted `Config.<Parameter>` (e.g. `Config.VpcName`),
+unless you have environment-specific settings for variables related to the roles as defined below
 
 - Variables related to configuring the aws-assume-role are formatted `Sts.<Parameter>` (e.g. `Sts.Role`)
 
