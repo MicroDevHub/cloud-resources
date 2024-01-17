@@ -65,10 +65,12 @@ $ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
 7. **Define Stack Inputs:** If there are stack inputs, specify them in the environment settings file using the syntax `Stack.Inputs.<Parameter>`, e.g., `Stack.Inputs.MyInputParam: some-value`.
 8. **Add Make Commands:** Integrate make commands for the new playbook, covering both deployment and deletion.
 9. **Deploy/Cleanup:** Ensure to include a command for deploying or deleting the stack, e.g.
-     `base-resource/%:
+     ```
+	base-resource/%:
 	${INFO} "Deploying base-resource environment $* with Stack.Delete=$(IS_DELETED)..."
 	@ ansible-playbook playbooks/base_resource_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
-	${INFO} "Deploying base-resource complete"`
+	${INFO} "Deploying base-resource complete"
+     ```
 
    After that, we can use the following command to deploy: `make base-resource/<environment>`.
 
