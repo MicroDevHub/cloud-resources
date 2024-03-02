@@ -8,7 +8,9 @@ This repository provides an Ansible playbook and CloudFormation template for dep
 To run this playbook on your local machine, you must install the following prerequisites:
 
 - Ansible 2.4 or higher
+- Python 3.10 or higher
 - Python PIP package manager
+- Poetry - Python packaging and dependency management (https://python-poetry.org/docs/)
 - The following PIP packages:
     - awscli
     - botocore
@@ -24,6 +26,21 @@ Your credentials must have permission to assume this role.
 - Prerequisites
 
 First and foremost, ensure that WSL2 is operational on your machine. If not, refer to this [link](<https://www.notion.so/Setup-WSL-on-Window-5b16441ea01a4d75b5953ea79fd05ca1?pvs=4>) for guidance on setting up WSL2 with Ubuntu.
+
+- Install package dependencies
+
+a. Change the directory to repository
+```
+cd cloud-resources
+```
+b. Activate the virtual environment with poetry
+```
+poetry shell
+```
+c. Install dependencies
+```
+poetry install
+```
 
 - Installing Ansible
 
