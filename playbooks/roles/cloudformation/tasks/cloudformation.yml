@@ -2,8 +2,9 @@
 - block:
     - name: set local path fact if s3 upload disabled
       set_fact:
-        cf_stack_template_path: "{{ cf_stack_template_json }}"
+        cf_stack_template_path: "{{ cf_stack_template_yaml }}"
       when: not cf_upload_s3
+
     - name: configure cloudformation stack
       cloudformation:
         stack_name: "{{ cf_stack_name }}"

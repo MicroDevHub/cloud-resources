@@ -2,13 +2,16 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
 Description: CloudFormation Resources
+Parameters:
+  Component:
+    Type: String
+    Description: Name of related component
 
 Resources:
   BookStoreBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName:
-        Fn::Sub: "micro-dev-hub-book-store-${AWS::AccountId}"
+      BucketName: !Sub "micro-dev-hub-book-store-${AWS::AccountId}-${Component}"
       Tags:
         - Key: Name
           Value: 

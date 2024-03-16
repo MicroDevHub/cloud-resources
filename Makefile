@@ -34,3 +34,8 @@ ecr-resource/%:
 	${INFO} "Deploying ecr-resource environment $* with Stack.Delete=$(IS_DELETED)..."
 	@ ansible-playbook playbooks/ecr_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
 	${INFO} "Deploying ecr-resource complete"
+
+vpc-resource/%:
+	${INFO} "Deploying vpc-resource environment $* with Stack.Delete=$(IS_DELETED)..."
+	@ ansible-playbook playbooks/vpc_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
+	${INFO} "Deploying vpc-resource complete"
