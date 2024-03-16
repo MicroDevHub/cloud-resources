@@ -8,19 +8,15 @@
 # Sts.Role: <ARN of your IAM role>
 Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
-# environment specific settings are always prefixed with config_
-Stack.Inputs.MyStackInput: "{{ 10000 | random }}"
 
 # VPC Configuration
-#Config.Vpcs:
-#  Default:
-#    Cidr: 192.168.0.0/20
-#    Domain: microdevhub.org
-#    SubnetSize: 24
-#    AzCount: 2
-#    PublicSubnets:
-#      - public
-#    PrivateSubnets:
-#      - medium
-#      - high
-#      - management
+Config.Vpcs:
+  Default:
+    Cidr: 10.0.0.0/16
+    Domain: microdevhub.org
+    PublicSubnetsIpRanges:
+      - 10.0.0.0/20
+      - 10.0.16.0/20
+    PrivateSubnetsIpRanges:
+      - 10.0.32.0/20
+      - 10.0.48.0/20
