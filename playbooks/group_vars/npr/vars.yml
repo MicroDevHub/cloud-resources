@@ -1,5 +1,6 @@
 ---
 # Add environment specific settings here
+Environment: npr
 
 # aws-sts settings
 # At a minimum you must specify the ARN of the IAM role
@@ -10,13 +11,22 @@ Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
 
 # VPC Configuration
-Config.Vpcs:
-  Default:
-    Cidr: 10.0.0.0/16
-    Domain: microdevhub.org
-    PublicSubnetsIpRanges:
-      - 10.0.0.0/20
-      - 10.0.16.0/20
-    PrivateSubnetsIpRanges:
-      - 10.0.32.0/20
-      - 10.0.48.0/20
+Config:
+  Vpcs:
+    Default:
+      Cidr: 10.0.0.0/16
+      Domain: microdevhub.org
+      PublicSubnetsIpRanges:
+        - 10.0.0.0/20
+        - 10.0.16.0/20
+      PrivateSubnetsIpRanges:
+        - 10.0.32.0/20
+        - 10.0.48.0/20
+  EKS:
+    # IDs of the "EKS-optimised AMIs" for the worker nodes:
+    # https://docs.aws.amazon.com/eks/latest/userguide/eks-optimized-ami.html
+    # IMPORTANT NOTE: Choose AWS EKS compatible ami IDs only
+    # aws ssm get-parameter --name /aws/service/eks/optimized-ami/1.29/amazon-linux-2/recommended/image_id --region "ap-southeast-2" --query "Parameter.Value" --output text
+    AmiIds:
+      Standard: ami-051635ff133c26e68
+    Version: "1.29"

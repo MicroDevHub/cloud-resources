@@ -4,7 +4,7 @@
 {% set config_vpc = Config.Vpcs['Default'] %}
 
 AWSTemplateFormatVersion: '2010-09-09'
-Description: EKS cluster using a VPC with two public subnets
+Description: VPC AWS CloudFormation template.
     
 Resources:
   VPC:
@@ -69,6 +69,7 @@ Resources:
         Ref: InternetGateway
       VpcId:
         Ref: VPC
+
   #=============   ROUTE  =============#
   RouteTable:
     Type: AWS::EC2::RouteTable
@@ -91,96 +92,77 @@ Resources:
       GatewayId:
         Ref: InternetGateway
 
-  NatGateway1EIP:
+{% for subnetIp in config_vpc.PublicSubnetsIpRanges %}
+  NatGateway{{ loop.index }}EIP:
     Type: AWS::EC2::EIP
     DependsOn: VPCGatewayAttachment
     Properties:
       Domain: vpc
-  NatGateway2EIP:
-    Type: AWS::EC2::EIP
-    DependsOn: VPCGatewayAttachment
-    Properties:
-      Domain: vpc
-  NatGateway1:
+  NatGateway{{ loop.index }}:
     Type: AWS::EC2::NatGateway
     Properties:
-      AllocationId: !GetAtt [ NatGateway1EIP, AllocationId ]
+      AllocationId: !GetAtt [ NatGateway{{ loop.index }}EIP, AllocationId ]
       SubnetId:
-        Ref: PublicSubnet1
-  NatGateway2:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt [ NatGateway2EIP, AllocationId ]
-      SubnetId:
-        Ref: PublicSubnet2
-  PrivateRouteTable1:
-    Type: AWS::EC2::RouteTable
-    DependsOn: VPC
-    Properties:
-      VpcId:
-        Ref: VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
-  DefaultPrivateRoute1:
-    Type: AWS::EC2::Route
-    DependsOn: PrivateRouteTable1
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable1
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId:
-        Ref: NatGateway1
-  PrivateRouteTable2:
-    Type: AWS::EC2::RouteTable
-    DependsOn: VPC
-    Properties:
-      VpcId:
-        Ref: VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
-  DefaultPrivateRoute2:
-    Type: AWS::EC2::Route
-    DependsOn: PrivateRouteTable2
-    Properties:
-      RouteTableId:
-        Ref: PrivateRouteTable2
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId:
-        Ref: NatGateway2
+        Ref: PublicSubnet{{ loop.index }}
 
   # To allow internet access for worker nodes from each subnet it’s necessary to associate each Subnet to the eks-RouteTable.
   # Associate subnets to the eks-RouteTable with the following declaration :
-  PublicSubnet1RouteTableAssociation:
+  PublicSubnet{{ loop.index }}RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PublicSubnet1
+    DependsOn: PublicSubnet{{ loop.index }}
     Properties:
       SubnetId:
-        Ref: PublicSubnet1
+        Ref: PublicSubnet{{ loop.index }}
       RouteTableId:
         Ref: RouteTable
-  PublicSubnet2RouteTableAssociation:
+{% endfor %}
+
+{% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
+  PrivateRouteTable{{ loop.index }}:
+    Type: AWS::EC2::RouteTable
+    DependsOn: VPC
+    Properties:
+      VpcId:
+        Ref: VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
+
+  DefaultPrivateRoute{{ loop.index }}:
+    Type: AWS::EC2::Route
+    DependsOn: PrivateRouteTable{{ loop.index }}
+    Properties:
+      RouteTableId:
+        Ref: PrivateRouteTable{{ loop.index }}
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: NatGateway{{ loop.index }}
+
+  PrivateSubnet{{ loop.index }}RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PublicSubnet2
+    DependsOn: PrivateRouteTable{{ loop.index }}
     Properties:
       SubnetId:
-        Ref: PublicSubnet2
+        Ref: PrivateSubnet{{ loop.index }}
       RouteTableId:
-        Ref: RouteTable
-  PrivateSubnet1RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PrivateRouteTable1
-    Properties:
-      SubnetId:
-        Ref: PrivateSubnet1
-      RouteTableId:
-        Ref: PrivateRouteTable1
-  PrivateSubnet2RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    DependsOn: PrivateSubnet2
-    Properties:
-      SubnetId:
-        Ref: PrivateSubnet2
-      RouteTableId:
-        Ref: PrivateRouteTable2
+        Ref: PrivateRouteTable{{ loop.index }}
+{% endfor %}
+  
+Outputs:
+  SubnetIds:
+    Description: Public Subnets IDs in the VPC
+    Value: !Join [ ",", [ !Ref PublicSubnet1, !Ref PublicSubnet2 ] ]
+    Export:
+      Name: microdevhub-{{ Environment }}-public-subnets
+{% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
+  PrivateSubnet{{ loop.index }}:
+    Description: Private Subnet {{ loop.index }} ID in the VPC
+    Value: !Ref PrivateSubnet{{ loop.index }}
+    Export:
+      Name: microdevhub-{{ Environment }}-private-subnet-{{ loop.index }}
+{% endfor %}
+  VpcId:
+    Description: The VPC Id
+    Value: !Ref VPC
+    Export:
+      Name: !Sub microdevhub-{{ Environment }}-vpc
