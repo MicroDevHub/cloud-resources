@@ -31,6 +31,26 @@ Resources:
           Value: 1
         - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
           Value: shared
+
+  NatGateway{{ loop.index }}EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway{{ loop.index }}:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt [ NatGateway{{ loop.index }}EIP, AllocationId ]
+      SubnetId: !Ref PublicSubnet{{ loop.index }}
+
+  # To allow internet access for worker nodes from each subnet it’s necessary to associate each Subnet to the eks-RouteTable.
+  # Associate subnets to the eks-RouteTable with the following declaration :
+  PublicSubnet{{ loop.index }}RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet{{ loop.index }}
+      RouteTableId: !Ref RouteTable
 {% endfor %}
 
 {% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
@@ -47,6 +67,27 @@ Resources:
           Value: 1
         - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
           Value: shared
+
+  PrivateRouteTable{{ loop.index }}:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
+
+  DefaultPrivateRoute{{ loop.index }}:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway{{ loop.index }}
+
+  PrivateSubnet{{ loop.index }}RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet{{ loop.index }}
+      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
 {% endfor %}
 
   # An Internet Gateway (IGW) is a resource that allows communication between your VPC and internet.
@@ -81,52 +122,7 @@ Resources:
       RouteTableId: !Ref RouteTable
       DestinationCidrBlock: 0.0.0.0/0
       GatewayId: !Ref InternetGateway
-
-{% for subnetIp in config_vpc.PublicSubnetsIpRanges %}
-  NatGateway{{ loop.index }}EIP:
-    Type: AWS::EC2::EIP
-    DependsOn: VPCGatewayAttachment
-    Properties:
-      Domain: vpc
-
-  NatGateway{{ loop.index }}:
-    Type: AWS::EC2::NatGateway
-    Properties:
-      AllocationId: !GetAtt [ NatGateway{{ loop.index }}EIP, AllocationId ]
-      SubnetId: !Ref PublicSubnet{{ loop.index }}
-
-  # To allow internet access for worker nodes from each subnet it’s necessary to associate each Subnet to the eks-RouteTable.
-  # Associate subnets to the eks-RouteTable with the following declaration :
-  PublicSubnet{{ loop.index }}RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PublicSubnet{{ loop.index }}
-      RouteTableId: !Ref RouteTable
-{% endfor %}
-
-{% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
-  PrivateRouteTable{{ loop.index }}:
-    Type: AWS::EC2::RouteTable
-    Properties:
-      VpcId: !Ref VPC
-      Tags:
-        - Key: Name
-          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
-
-  DefaultPrivateRoute{{ loop.index }}:
-    Type: AWS::EC2::Route
-    Properties:
-      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
-      DestinationCidrBlock: 0.0.0.0/0
-      NatGatewayId: !Ref NatGateway{{ loop.index }}
-
-  PrivateSubnet{{ loop.index }}RouteTableAssociation:
-    Type: AWS::EC2::SubnetRouteTableAssociation
-    Properties:
-      SubnetId: !Ref PrivateSubnet{{ loop.index }}
-      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
-{% endfor %}
-  
+ 
 Outputs:
   SubnetIds:
     Description: Public Subnets IDs in the VPC
