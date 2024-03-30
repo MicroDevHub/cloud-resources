@@ -14,18 +14,15 @@ Resources:
       BucketName: !Sub "microdevhub-${Component}-${AWS::AccountId}"
       Tags:
         - Key: Name
-          Value: 
-            Fn::Sub: "microdevhub-${Component}-${AWS::AccountId}"
+          Value: !Sub "microdevhub-${Component}-${AWS::AccountId}"
 Outputs:
   BookStoreBucketName:
     Description: "MicroDevHub BookStore Bucket Name"
-    Value:
-      Ref: BookStoreBucket
+    Value: !Ref BookStoreBucket
     Export:
       Name: "BookStoreBucket"
   BookStoreBucketURL:
     Description: "MicroDevHub BookStore Bucket URL"
-    Value: 
-      Fn::Sub: "${BookStoreBucket.WebsiteURL}"
+    Value: !Sub "${BookStoreBucket.WebsiteURL}"
     Export:
       Name: "BookStoreBucketURL"

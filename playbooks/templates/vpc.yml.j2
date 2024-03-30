@@ -90,7 +90,7 @@ Resources:
       Domain: vpc
 
   NatGateway{{ loop.index }}:
-    Type: AWS::EC2::NatGatewa
+    Type: AWS::EC2::NatGateway
     Properties:
       AllocationId: !GetAtt [ NatGateway{{ loop.index }}EIP, AllocationId ]
       SubnetId: !Ref PublicSubnet{{ loop.index }}
