@@ -11,11 +11,11 @@ Resources:
   BookStoreBucket:
     Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub "micro-dev-hub-book-store-${AWS::AccountId}-${Component}"
+      BucketName: !Sub "microdevhub-${Component}-${AWS::AccountId}"
       Tags:
         - Key: Name
           Value: 
-            Fn::Sub: "micro-dev-hub-book-store-${AWS::AccountId}"
+            Fn::Sub: "microdevhub-${Component}-${AWS::AccountId}"
 Outputs:
   BookStoreBucketName:
     Description: "MicroDevHub BookStore Bucket Name"
