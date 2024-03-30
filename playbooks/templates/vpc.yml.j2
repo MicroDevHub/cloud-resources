@@ -132,18 +132,18 @@ Outputs:
     Description: Public Subnets IDs in the VPC
     Value: !Join [ ",", [ !Ref PublicSubnet1, !Ref PublicSubnet2 ] ]
     Export:
-      Name: microdevhub-{{ Environment }}-public-subnets
+      Name: microdevhub-{{ env }}-public-subnets
 
 {% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
   PrivateSubnet{{ loop.index }}:
     Description: Private Subnet {{ loop.index }} ID in the VPC
     Value: !Ref PrivateSubnet{{ loop.index }}
     Export:
-      Name: microdevhub-{{ Environment }}-private-subnet-{{ loop.index }}
+      Name: microdevhub-{{ env }}-private-subnet-{{ loop.index }}
 {% endfor %}
 
   VpcId:
     Description: The VPC Id
     Value: !Ref VPC
     Export:
-      Name: !Sub microdevhub-{{ Environment }}-vpc
+      Name: !Sub microdevhub-{{ env }}-vpc

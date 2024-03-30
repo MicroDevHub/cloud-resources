@@ -31,15 +31,15 @@ Resources:
   ControlPlane:
     Type: AWS::EKS::Cluster
     Properties:
-      Name: !Sub microdevhub-{{ Environment }}-eks
+      Name: !Sub microdevhub-{{ env }}-eks
       Version: {{ config_eks.Version }}
       RoleArn: !GetAtt ControlPlaneRole.Arn
       ResourcesVpcConfig:
         SecurityGroupIds:
           - !Ref ControlPlaneSecurityGroup
         SubnetIds:
-          - !ImportValue microdevhub-{{ Environment }}-private-subnet-1
-          - !ImportValue microdevhub-{{ Environment }}-private-subnet-2
+          - !ImportValue microdevhub-{{ env }}-private-subnet-1
+          - !ImportValue microdevhub-{{ env }}-private-subnet-2
     DependsOn: [ControlPlaneRole]
 
   ControlPlaneRole:
@@ -57,7 +57,6 @@ Resources:
         - arn:aws:iam::aws:policy/AmazonEKSClusterPolicy
         - arn:aws:iam::aws:policy/AmazonEKSServicePolicy
 
-
   #============================================================================#
   # Control plane security group
   #============================================================================#
@@ -66,7 +65,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for the elastic network interfaces between the control plane and the worker nodes
-      VpcId: !ImportValue microdevhub-{{ Environment }}-vpc
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-ControlPlaneSecurityGroup"
@@ -110,7 +109,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Security group for all the worker nodes
-      VpcId: !ImportValue microdevhub-{{ Environment }}-vpc
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-WorkerNodesSecurityGroup"
@@ -176,8 +175,8 @@ Resources:
       MinSize: !Ref NumWorkerNodes
       MaxSize: !Ref NumWorkerNodes
       VPCZoneIdentifier:
-        - !ImportValue microdevhub-{{ Environment }}-private-subnet-1
-        - !ImportValue microdevhub-{{ Environment }}-private-subnet-2
+        - !ImportValue microdevhub-{{ env }}-private-subnet-1
+        - !ImportValue microdevhub-{{ env }}-private-subnet-2
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-WorkerNodesAutoScalingGroup"
@@ -199,8 +198,8 @@ Resources:
         DesiredSize: !Ref NumWorkerNodes
         MaxSize: !Ref NumWorkerNodes
       Subnets:
-        - !ImportValue microdevhub-{{ Environment }}-private-subnet-1
-        - !ImportValue microdevhub-{{ Environment }}-private-subnet-2
+        - !ImportValue microdevhub-{{ env }}-private-subnet-1
+        - !ImportValue microdevhub-{{ env }}-private-subnet-2
       Tags:
         Name: WorkerNodesAutoScalingGroup
 

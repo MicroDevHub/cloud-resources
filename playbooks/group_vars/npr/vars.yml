@@ -1,6 +1,5 @@
 ---
 # Add environment specific settings here
-Environment: npr
 
 # aws-sts settings
 # At a minimum you must specify the ARN of the IAM role
