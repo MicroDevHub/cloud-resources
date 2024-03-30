@@ -7,6 +7,9 @@
   vars:
     cf_stack_template: "{{ Stack.Template | default('./templates/base_resource.yml.j2') }}"
     cf_stack_name: "base-resource-{{ env }}"
+    Stack:
+      Inputs:
+        Component: "bookstore"
 
   pre_tasks:
     - name: create stack facts

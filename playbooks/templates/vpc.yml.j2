@@ -1,0 +1,145 @@
+# This Cloudformation template will creae following modules
+# VPC, 2-public subnest, InternetGateway, 2 private subnets
+# https://www.sokube.io/en/blog/aws-kubernetes-aws-elastic-kubernetes-service-eks-en
+{% set config_vpc = Config.Vpcs['Default'] %}
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: VPC AWS CloudFormation template.
+    
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: {{ config_vpc.Cidr }}
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+{% for subnetIp in config_vpc.PublicSubnetsIpRanges %}
+  PublicSubnet{{ loop.index }}:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: {{ subnetIp }}
+      AvailabilityZone: !Select [{{ loop.index - 1 }}, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnet{{ loop.index }}"
+        - Key: kubernetes.io/role/elb
+          Value: 1
+        - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
+          Value: shared
+
+  NatGateway{{ loop.index }}EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      Domain: vpc
+
+  NatGateway{{ loop.index }}:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt [ NatGateway{{ loop.index }}EIP, AllocationId ]
+      SubnetId: !Ref PublicSubnet{{ loop.index }}
+
+  # To allow internet access for worker nodes from each subnet it’s necessary to associate each Subnet to the eks-RouteTable.
+  # Associate subnets to the eks-RouteTable with the following declaration :
+  PublicSubnet{{ loop.index }}RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet{{ loop.index }}
+      RouteTableId: !Ref RouteTable
+{% endfor %}
+
+{% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
+  PrivateSubnet{{ loop.index }}:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: {{ subnetIp }}
+      AvailabilityZone: !Select [ {{ loop.index - 1 }}, !GetAZs '' ]
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PrivateSubnet{{ loop.index }}"
+        - Key: kubernetes.io/role/internal-elb
+          Value: 1
+        - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
+          Value: shared
+
+  PrivateRouteTable{{ loop.index }}:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName} Private Routes (AZ1)
+
+  DefaultPrivateRoute{{ loop.index }}:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway{{ loop.index }}
+
+  PrivateSubnet{{ loop.index }}RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet{{ loop.index }}
+      RouteTableId: !Ref PrivateRouteTable{{ loop.index }}
+{% endfor %}
+
+  # An Internet Gateway (IGW) is a resource that allows communication between your VPC and internet.
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+  VPCGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref VPC
+
+  #=============   ROUTE  =============#
+  RouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-PublicSubnets"
+
+  InternetGatewayRoute:
+    Type: AWS::EC2::Route
+    # DependsOn is mandatory because route targets InternetGateway
+    # See here: https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-attribute-dependson.html#gatewayattachment
+    DependsOn: VPCGatewayAttachment
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+ 
+Outputs:
+  SubnetIds:
+    Description: Public Subnets IDs in the VPC
+    Value: !Join [ ",", [ !Ref PublicSubnet1, !Ref PublicSubnet2 ] ]
+    Export:
+      Name: microdevhub-{{ env }}-public-subnets
+
+{% for subnetIp in config_vpc.PrivateSubnetsIpRanges %}
+  PrivateSubnet{{ loop.index }}:
+    Description: Private Subnet {{ loop.index }} ID in the VPC
+    Value: !Ref PrivateSubnet{{ loop.index }}
+    Export:
+      Name: microdevhub-{{ env }}-private-subnet-{{ loop.index }}
+{% endfor %}
+
+  VpcId:
+    Description: The VPC Id
+    Value: !Ref VPC
+    Export:
+      Name: !Sub microdevhub-{{ env }}-vpc
