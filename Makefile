@@ -44,3 +44,8 @@ eks-resource/%:
 	${INFO} "Deploying eks-resource environment $* with Stack.Delete=$(IS_DELETED)..."
 	@ ansible-playbook playbooks/eks_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
 	${INFO} "Deploying eks-resource complete"
+
+k8s-deployment/%:
+	${INFO} "Deploying services to K8S $*"
+	@ ansible-playbook playbooks/k8s_app_deploy_playbook.yml -e env=$* $(FLAGS)
+	${INFO} "Deploying services to K8S complete"

@@ -1,0 +1,65 @@
+---
+- hosts: all
+  gather_facts: yes
+  vars_files:
+    - ../catalog/apps/service.yml
+  vars:
+    namespace_name: "npr"
+    kubeconfig_file: "~/.kube/config"
+    deployment_file: "./templates/k8s_deployment.yml.j2"
+    manifest_base_dir: "/kubernetes_manifests"
+    manifest_app_dir: "/kubernetes_manifests/{{app.name}}"
+    deployment_file: ""../../templates/deployment.yml"
+
+  tasks:
+    - fail:
+        msg: "Please specify an app name and all relevant info in kube-vars.yml to use this" 
+      when: "app.name == '<app_name>'"
+
+    - name: Ensure manifest dir exists
+      file:
+        path: "{{ manifest_app_dir }}"
+        state: directory
+
+    - name: Create a k8s namespace
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_file }}"
+        name: "{{ namespace_name }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: Create manifest template for kube deploy 
+      template:
+        src: "{{ deployment_file }}"
+        dest: "{{ manifest_app_dir }}/{{ deployment_file }}"
+      register: deploy_template
+
+    # Applys 
+    - block:
+      - name: Apply kubernetes deployment
+        kubernetes.core.k8s:
+          kubeconfig: "{{ kubeconfig_file }}"
+          state: present
+          src: "{{ manifest_app_dir }}/{{ deployment_file }}"
+          namespace: "{{ namespace_name }}"
+
+        #- name: apply kubernetes deployment
+        #  shell: "kubectl apply -f {{manifest_app_dir}}/{{deployment_file}}"
+      when: "deployment_enabled"
+
+    # Removals
+    - block:
+      - name: Remove an existing Service object
+        kubernetes.core.k8s:
+          state: absent
+          api_version: v1
+          kind: Service
+          namespace: testing
+          name: "{{ app.name }}"
+
+        #- name: remove kubernetes deployment
+        #  shell: "kubectl delete -f {{manifest_app_dir}}/{{deployment_file}}"
+        #  register: remove_kube_deployment
+      when: not deployment_enabled
+

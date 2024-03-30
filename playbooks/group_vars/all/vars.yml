@@ -1,16 +1,5 @@
 ---
 # Add global settings here
-
-# aws-cloudformation role settings
-Stack.Name: cloud-resources
-
-# By default, the aws-cloudformation role expects your stack template
-# to be defined in the templates/stack.yml.j2 file
-
-# Define stack inputs as required
-# Stack.Inputs:
-#   MyStackInput: 10000
-
 # Here we define repositories for each of MicroDevHub release images
 Config.Repositories:
   microdevhub/bookstore-service: {}
