@@ -116,6 +116,7 @@ Resources:
           Value: !Sub "${AWS::StackName}-WorkerNodesSecurityGroup"
         - Key: !Sub "kubernetes.io/cluster/${ControlPlane}"
           Value: "owned"
+
   WorkerNodesIngressFromWorkerNodes:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -123,6 +124,7 @@ Resources:
       GroupId: !Ref WorkerNodesSecurityGroup
       SourceSecurityGroupId: !Ref WorkerNodesSecurityGroup
       IpProtocol: "-1"
+
   WorkerNodesIngressFromControlPlaneKubelet:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -132,6 +134,7 @@ Resources:
       IpProtocol: tcp
       FromPort: 10250
       ToPort: 10250
+
   WorkerNodesIngressFromControlPlaneHttps:
     Type: AWS::EC2::SecurityGroupIngress
     Properties:
@@ -192,12 +195,9 @@ Resources:
       ClusterName: !Ref ControlPlane
       NodeRole: !GetAtt WorkerNodesRole.Arn
       ScalingConfig:
-        MinSize:
-          Ref: NumWorkerNodes
-        DesiredSize:
-          Ref: NumWorkerNodes
-        MaxSize:
-          Ref: NumWorkerNodes
+        MinSize: !Ref NumWorkerNodes
+        DesiredSize: !Ref NumWorkerNodes
+        MaxSize: !Ref NumWorkerNodes
       Subnets:
         - !ImportValue microdevhub-{{ Environment }}-private-subnet-1
         - !ImportValue microdevhub-{{ Environment }}-private-subnet-2
