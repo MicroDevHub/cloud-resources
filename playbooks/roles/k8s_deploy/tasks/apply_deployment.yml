@@ -1,0 +1,44 @@
+---
+
+# Applys 
+- block:
+  - name: create stack facts "{{ app_service.name }}"
+    set_fact:
+      manifest_app_dir: "../catalog/deployments/{{app_service.name}}"
+
+  - name: Ensure manifest dir exists
+    file:
+      path: "{{ manifest_app_dir }}"  # Specify the path for the directory
+      state: directory  # Ensure that it is a directory
+
+  - name: Deploy "{{ app_service.name }}" Service
+    template:
+      src: "{{ deployment_file }}"
+      dest: "{{ manifest_app_dir }}/{{ app_service.name }}_deployment.yml"
+    register: deploy_template
+
+  - name: Apply "{{ app_service.name }}" Kubernetes deployment
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: present
+      src: "{{ manifest_app_dir }}/{{ app_service.name }}_deployment.yml"
+      namespace: "{{ namespace_name }}"
+    when: deployment_enabled
+
+# Removals
+- block:
+  - name: Remove an existing Service object
+    kubernetes.core.k8s:
+      state: absent
+      api_version: v1
+      kind: Service
+      namespace: "{{ namespace_name }}"
+      name: "{{ app_service.name }}"
+
+    #- name: remove kubernetes deployment
+    #  shell: "kubectl delete -f {{manifest_app_dir}}/{{deployment_file}}"
+    #  register: remove_kube_deployment
+  when: not deployment_enabled
+
+
+

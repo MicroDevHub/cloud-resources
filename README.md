@@ -49,7 +49,7 @@ To mitigate security risks associated with the 'ansible.cfg' file in the current
 follow the guidelines provided in the Ansible documentation.
 
 If running locally, resolve the issue by exporting:
-$ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
+$ export ANSIBLE_CONFIG=/mnt/d/working/microdevhub/cloud-resources/ansible.cfg
 ```
 
 ## How to add and run a new playbook
@@ -84,3 +84,7 @@ unless you have environment-specific settings for variables related to the roles
 - Variables related to configuring the aws-assume-role are formatted `Sts.<Parameter>` (e.g. `Sts.Role`)
 
 - Variables related to configuring the aws-cloudformation formatted `Stack.<Parameter>` (e.g. `Stack.Name`)
+
+# Additional
+- Setup minikube on WSL:
+https://gist.github.com/wholroyd/748e09ca0b78897750791172b2abb051
