@@ -7,8 +7,11 @@
     namespace_name: "npr"
     kubeconfig_file: "~/.kube/config"
     deployment_file: "./templates/k8s_deployment.yml.j2"
-    deployment_file_yml: "k8s_deployment.yml"
-
+    manifest_app_dir: "../catalog/deployments/"
+    # If we should deploy this kubernetes or not.  
+    # Setting this to false and re-running our deploy playbook will remove the kubernetes deployment 
+    # example to remove: ansible-playbook kubernetes/kube.deployment.playbook.yml --extra-vars '{deployment_enabled: false}'
+    deployment_enabled: true 
   roles:
     - role: assume_aws_role
     - role: k8s_deploy
