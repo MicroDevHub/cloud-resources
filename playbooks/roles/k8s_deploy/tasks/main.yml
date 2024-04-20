@@ -1,7 +1,7 @@
 - block:
   - import_tasks: init.yml
 
-  - name: create stack facts "{{ app_service.name }}"
+  - name: create stack facts deployment
     set_fact:
       manifest_app_dir: "../catalog/deployments/"
 
@@ -10,6 +10,11 @@
     include_vars:
       file: "../catalog/apps/service.yml"
     no_log: true  # To avoid showing the content of the loaded variables in logs
+
+  # Load service configurations
+  - name: Load catalog configurations in {{env}} environment
+    include_vars:
+      file: "../catalog/configurations/{{ namespace_name }}/config.yml"
 
 - block:
   - name: Ensure manifest dir exists

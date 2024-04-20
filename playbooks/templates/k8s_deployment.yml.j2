@@ -1,4 +1,16 @@
 {% for app_service in service_configs %}
+{% if app_service.name in configuration %}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{app_service.name}}
+data:
+{% for key, value in configuration[app_service.name].items() %}
+    {{ key }}: {{ value | to_nice_yaml(width=0, indent=4) }}
+{% endfor %}
+{% endif %}
+
 ---
 apiVersion: v1
 kind: Service
@@ -24,6 +36,7 @@ metadata:
   labels:
     app: {{app_service.name}}
 spec:
+  replicas: {{ app_service.replicas }}
   selector:
     matchLabels:
       app: {{app_service.name}}
@@ -37,4 +50,16 @@ spec:
       containers:
         - image: "{{docker_registry}}/{{app_service.container_name}}:{{app_service.container_tag}}"
           name: {{app_service.name}}
+          env:
+            - name: CONFIG_MAP_KEY
+              value: /etc/config/{{ app_service.name }}.yaml
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/config
+              readOnly: true
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{app_service.name}}
+
 {% endfor %}

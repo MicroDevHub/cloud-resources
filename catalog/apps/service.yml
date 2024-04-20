@@ -18,6 +18,7 @@ service_configs:
     nodePort: 30080
     # Port exposed to the pod - note that nodePort is typically forwarded to this port
     port: 80
+    replicas: 2
 
   - name: nginx2
     # Name of our container image within our registry 
@@ -28,6 +29,7 @@ service_configs:
     nodePort: 30081
     # Port exposed to the pod - note that nodePort is typically forwarded to this port
     port: 80
+    replicas: 1
 
 # A compiled variable of our image we will run in the pod  
 # Note: this needs to be built outside of our our app: context due to a recursion bug in jinja2 

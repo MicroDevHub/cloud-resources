@@ -10,4 +10,5 @@
     deployment_file_yml: "k8s_deployment.yml"
 
   roles:
+    - role: assume_aws_role
     - role: k8s_deploy
