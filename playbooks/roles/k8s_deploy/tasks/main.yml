@@ -1,17 +1,53 @@
 - block:
-    - import_tasks: init.yml
-  when: deployment_enabled
+  - import_tasks: init.yml
 
-- block:
+  - name: create stack facts "{{ app_service.name }}"
+    set_fact:
+      manifest_app_dir: "../catalog/deployments/"
+
   # Load service configurations
   - name: Load service configurations
     include_vars:
       file: "../catalog/apps/service.yml"
     no_log: true  # To avoid showing the content of the loaded variables in logs
 
-  # Deploy services
-  - name: Deploy Services
-    include_tasks: roles/k8s_deploy/tasks/apply_deployment.yml
-    loop: "{{ service_configs }}"
+- block:
+  - name: Ensure manifest dir exists
+    file:
+      path: "{{ manifest_app_dir }}"  # Specify the path for the directory
+      state: directory  # Ensure that it is a directory
+
+  - name: Generate combined deployment file
+    template:
+      src: "./templates/k8s_deployment.yml.j2"
+      dest: "{{manifest_app_dir}}/k8s_deployment.yml"
+
+  - name: Apply apps Kubernetes deployment
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: present
+      src: "{{ manifest_app_dir }}/k8s_deployment.yml"
+      namespace: "{{ namespace_name }}"
+  when: deployment_enabled
+
+- block:
+  - name: List existing deployments and services
+    kubernetes.core.k8s_info:
+      api_version: v1
+      kubeconfig: "{{ kubeconfig_file }}"
+      kind: Deployment
+      namespace: "{{ namespace_name }}"
+    register: k8s_resources
+
+  - name: Check if service exists in Kubernetes and catalog resources
+    set_fact:
+      service_exists: "{{ k8s_resources.resources | map(attribute='metadata.name') | list }}"
+      service_catalogs: "{{ service_configs | map(attribute='name') | list }}"
+
+  - name: Loop through existing services and remove if not found in catalog
+    loop: "{{ service_exists }}"
     loop_control:
       loop_var: app_service
+    when: app_service not in service_catalogs
+    include_tasks: remove_deployment.yml
+  when: not deployment_enabled

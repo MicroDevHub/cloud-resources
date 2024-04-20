@@ -1,3 +1,4 @@
+{% for app_service in service_configs %}
 ---
 apiVersion: v1
 kind: Service
@@ -34,5 +35,6 @@ spec:
         app: {{app_service.name}}
     spec:
       containers:
-        - image: {{container_image}}
+        - image: "{{docker_registry}}/{{app_service.container_name}}:{{app_service.container_tag}}"
           name: {{app_service.name}}
+{% endfor %}
