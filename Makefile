@@ -46,6 +46,6 @@ eks-resource/%:
 	${INFO} "Deploying eks-resource complete"
 
 k8s-deployment/%:
-	${INFO} "Deploying services to K8S $*"
-	@ ansible-playbook playbooks/k8s_app_deploy_playbook.yml -e env=$* $(FLAGS)
+	${INFO} "Deploying services to K8S for the '$(if $(strip $(NAMESPACE)),$(NAMESPACE),$*)' namespace in '$*' env"
+	@ ansible-playbook playbooks/k8s_app_deploy_playbook.yml -e env=$* -e Stack.Namespace=$(NAMESPACE) $(FLAGS)
 	${INFO} "Deploying services to K8S complete"

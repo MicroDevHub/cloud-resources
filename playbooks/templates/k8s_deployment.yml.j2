@@ -1,10 +1,12 @@
+# THIS FILE IS AUTO-GENERATED, PLEASE DO NOT EDIT
+
 {% for app_service in service_configs %}
 {% if app_service.name in configuration %}
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{app_service.name}}
+  name: {{ app_service.name }}
 data:
 {% for key, value in configuration[app_service.name].items() %}
     {{ key }}: {{ value | to_nice_yaml(width=0, indent=4) }}
@@ -15,41 +17,41 @@ data:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{app_service.name}}
+  name: {{ app_service.name }}
   labels:
-    app: {{app_service.name}}
+    app: {{ app_service.name }}
 spec:
   type: NodePort
   ports:
     - name: http-{{app_service.name}}
       protocol: TCP
-      nodePort: {{app_service.nodePort}}
-      port: {{app_service.port}}
+      nodePort: {{ app_service.nodePort }}
+      port: {{ app_service.port }}
   selector:
-    app: {{app_service.name}}
+    app: {{ app_service.name }}
 
 ---
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: {{app_service.name}}
+  name: {{ app_service.name }}
   labels:
-    app: {{app_service.name}}
+    app: {{ app_service.name }}
 spec:
   replicas: {{ app_service.replicas }}
   selector:
     matchLabels:
-      app: {{app_service.name}}
+      app: {{ app_service.name }}
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        app: {{app_service.name}}
+        app: {{ app_service.name }}
     spec:
       containers:
         - image: "{{docker_registry}}/{{app_service.container_name}}:{{app_service.container_tag}}"
-          name: {{app_service.name}}
+          name: {{ app_service.name }}
           env:
             - name: CONFIG_MAP_KEY
               value: /etc/config/{{ app_service.name }}.yaml
@@ -60,6 +62,6 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: {{app_service.name}}
+            name: {{ app_service.name }}
 
 {% endfor %}

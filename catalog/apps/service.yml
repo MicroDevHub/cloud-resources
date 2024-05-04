@@ -3,8 +3,8 @@
 docker_registry: docker.io/library
 
 # A compiled variable of our image we will run in the pod  
-# Note: this needs to be built outside of our our app: context due to a recursion bug in jinja2 
-container_image: "{{docker_registry}}/{{app_service.container_name}}:{{app_service.container_tag}}"
+# Note: this needs to be built outside of our app: context due to a recursion bug in jinja2 
+container_image: "{{ docker_registry }}/{{ app_service.container_name }}:{{ app_service.container_tag }}"
 
 service_configs:
   # Variabled specific to our app or service

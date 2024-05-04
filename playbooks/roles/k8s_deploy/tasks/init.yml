@@ -1,5 +1,13 @@
 ---
 - block:
+  - name: set stack config
+    set_fact:
+      Stack: "{{ Stack | default({}) | combine((vars['hostvars'][env] | dotted_dict(paths=['Stack.'])).get('Stack') or {}, recursive=True) }}"
+
+  - name: set namspace config
+    set_fact:
+      namespace_name: "{{ Stack.Namespace if Stack.Namespace | length > 0 else env }}"
+
   - name: install pre-requisites
     pip:
       name:
@@ -7,7 +15,7 @@
         - pyyaml
         - kubernetes 
 
-  - name: Create a k8s namespace
+  - name: Create a k8s namespace {{ namespace_name }}
     kubernetes.core.k8s:
       kubeconfig: "{{ kubeconfig_file }}"
       name: "{{ namespace_name }}"
