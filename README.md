@@ -84,7 +84,3 @@ unless you have environment-specific settings for variables related to the roles
 - Variables related to configuring the aws-assume-role are formatted `Sts.<Parameter>` (e.g. `Sts.Role`)
 
 - Variables related to configuring the aws-cloudformation formatted `Stack.<Parameter>` (e.g. `Stack.Name`)
-
-# Additional
-- Setup minikube on WSL:
-https://gist.github.com/wholroyd/748e09ca0b78897750791172b2abb051

@@ -31,3 +31,7 @@ Removes any resources from EKS that are not present in the catalog configuration
 - For detailed configuration options and customization, refer to the playbook and associated configuration files.
 # Contributing
 Feel free to contribute to the improvement and enhancement of this role. Pull requests are welcome!
+
+# Additional
+- Setup minikube on WSL:
+https://gist.github.com/wholroyd/748e09ca0b78897750791172b2abb051

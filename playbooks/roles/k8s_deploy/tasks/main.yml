@@ -1,3 +1,4 @@
+# Load catalog configuration and create a Namespace
 - block:
   - import_tasks: init.yml
 
@@ -7,6 +8,7 @@
       file: "../catalog/configurations/{{ env }}/config.yml"
     no_log: true  # To avoid showing the content of the loaded variables in logs
 
+# Apply apps Kubernetes deployment
 - block:
   - name: Ensure manifest dir exists
     file:
@@ -26,6 +28,7 @@
       namespace: "{{ namespace_name }}"
   when: deployment_enabled
 
+# Remove apps Kubernetes deployment
 - block:
   - name: List existing deployments and services
     kubernetes.core.k8s_info:
