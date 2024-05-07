@@ -1,0 +1,16 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: MySQL RDS AWS
+
+Resources:
+ MicroMySQL:
+  Type: AWS::RDS::DBInstance
+  Properties:
+    DBName: quan
+    DBInstanceClass: db.m5.large
+    Engine: mysql
+    AllocatedStorage: 20
+    EngineVersion: 8.0
+    MasterUsername: microdevhud
+    MasterUserPassword: 12345678456
+  UpdateReplacePolicy: Delete
+  DeletionPolicy: Delete
