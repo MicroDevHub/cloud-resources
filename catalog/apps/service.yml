@@ -1,20 +1,12 @@
-
-# Docker registry where this image will come from 
-docker_registry: 236925568009.dkr.ecr.ap-southeast-2.amazonaws.com/microdevhub
-
-# A compiled variable of our image we will run in the pod  
-# Note: this needs to be built outside of our app: context due to a recursion bug in jinja2 
-container_image: "{{ docker_registry }}/{{ app_service.container_name }}:{{ app_service.container_tag }}"
-
 service_configs:
   # Variabled specific to our app or service
-  - name: nginx
+  - name: service-bookstore
     # Name of our container image within our registry 
-    container_name: bookstore-service
+    container_name: huyhoang1001/books
     # Tag of our image within our registry 
     container_tag: latest
     # Port exposed on kubernetes worker
-    nodePort: 30080
+    nodePort: 30000
     # Port exposed to the pod - note that nodePort is typically forwarded to this port
-    port: 80
-    replicas: 2
+    port: 3000
+    replicas: 1

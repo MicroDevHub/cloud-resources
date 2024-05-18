@@ -8,6 +8,10 @@
 # Sts.Role: <ARN of your IAM role>
 Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
+Sts.AccountId: 236925568009
+# Docker registry where this image will come from 
+Sts.DockerRegistry: docker.io
+# Sts.DockerRegistry: 236925568009.dkr.ecr.ap-southeast-2.amazonaws.com/microdevhub
 
 # VPC Configuration
 Config:

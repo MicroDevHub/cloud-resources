@@ -2,6 +2,7 @@ configuration:
   nginx:
     key1: value1
     key2: value2
-  nginx2:
-    key1: value3
-    key2: value2
+  service-bookstore:
+    BOOKS_MONGO_URL: mongodb://books-mongo-srv/books-db
+    NATS_URL: http://nats-srv:4222
+    NATS_CLUSTER_ID: books

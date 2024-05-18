@@ -50,7 +50,7 @@ spec:
         app: {{ app_service.name }}
     spec:
       containers:
-        - image: "{{docker_registry}}/{{app_service.container_name}}:{{app_service.container_tag}}"
+        - image: "{{ Sts.DockerRegistry }}/{{ app_service.container_name }}:{{ app_service.container_tag }}"
           name: {{ app_service.name }}
           env:
             - name: CONFIG_MAP_KEY
@@ -68,8 +68,8 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: {{ app_service.name }}
-  namespace: npr
+  namespace: {{ namespace_name }}
   annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::${AWS::AccountId}:role/ECRReadOnlyRole" # TODO should have a best way to get AWS_ROLE here instead of hard code
+    eks.amazonaws.com/role-arn: "arn:aws:iam::{{ Sts.AccountId }}:role/ECRReadOnlyRole" # TODO should have a best way to get AWS_ROLE here instead of hard code
 
 {% endfor %}
