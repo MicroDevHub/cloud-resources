@@ -63,5 +63,13 @@ spec:
         - name: config-volume
           configMap:
             name: {{ app_service.name }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ app_service.name }}
+  namespace: npr
+  annotations:
+    eks.amazonaws.com/role-arn: "arn:aws:iam::${AWS::AccountId}:role/ECRReadOnlyRole" # TODO should have a best way to get AWS_ROLE here instead of hard code
 
 {% endfor %}
