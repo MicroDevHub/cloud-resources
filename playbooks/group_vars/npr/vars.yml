@@ -33,4 +33,3 @@ Config:
     AmiIds:
       Standard: ami-051635ff133c26e68
     Version: "1.29"
-
