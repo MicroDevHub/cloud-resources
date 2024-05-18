@@ -1,0 +1,323 @@
+---
+{% set config_jenkins = Config.Jenkins %}
+{% set region = Sts.Region %}
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS CloudFormation Template Jenkins-EC2.'
+
+Mappings:
+  AWSInstanceType2Arch:
+    t2.micro:
+      Arch: HVM64
+  AWSInstanceType2NATArch:
+    t2.micro:
+      Arch: NATHVM64
+  AWSRegionArch2AMI:
+    {{region}}:
+      HVM64: ami-04f73ca9a4310089f
+
+Resources:
+  JenkinsInstance:
+    Type: AWS::EC2::Instance
+    Metadata:
+      AWS::CloudFormation::Init:
+        configSets:
+          default: 
+            - "mountVolume"
+            - "config"
+            - "jenkinsConfig"
+        mountVolume:
+          commands:
+            01_mkdir:
+              command: sudo mkdir -p /var/lib/jenkins
+            02_fdisk:
+              command: echo -e "o\nn\np\n1\n\n\nw" | sudo fdisk /dev/sdb
+            03_wait:
+              command: sleep 3
+            04_mkfs:
+              command: sudo mkfs.ext4 /dev/sdb1
+            05_disk_label:
+              command: e2label /dev/sdb1 JENKINS
+            06_fstab:
+              command: echo -e "LABEL=JENKINS     /var/lib/jenkins    ext4   defaults 0 0" >> /etc/fstab
+            07_mount:
+              command: mount -a
+        jenkinsConfig:
+          packages:
+            yum:
+              wget: []
+              net-tools: []
+              git: []
+              jq: []
+          commands:
+            00_update_yum:
+              command: sudo yum update -y
+            01_epel_repo:
+              command: sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            02_jenkins_repo:
+              command: sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+            03_install_java_jdk_Amazon_Corretto_17:
+              command: sudo yum install java-17-amazon-corretto-devel -y
+            04_jenkins_key:
+              command: sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+            05_yum_clean:
+              command: yum clean all
+            06_upgrade_yum:
+              command: sudo yum upgrade -y
+            07_jenkins_dirs:
+              command: sudo mkdir -p /home/jenkins /var/lib/jenkins/.ssh /var/cache/jenkins/war /var/log/jenkins
+            08_jenkins_install:
+              command: sudo yum install -y jenkins
+            09_check_jenkins_login:
+              command: usermod -s /bin/bash jenkins
+            10_sshconfig:
+              command: sudo echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /var/lib/jenkins/.ssh/config
+            11_ssh_keygen:
+              command: sudo ssh-keygen -t rsa -b 2048 -C jenkins@jenkins -N "" -f /var/lib/jenkins/.ssh/id_rsa; sudo cat /var/lib/jenkins/.ssh/id_rsa.pub > /var/lib/jenkins/.ssh/authorized_keys
+            12_set_permissions:
+              command: sudo chown -R jenkins:jenkins /home/jenkins /var/lib/jenkins /var/cache/jenkins /var/log/jenkins; sudo chmod 0700 /var/lib/jenkins/.ssh; sudo chmod 0600 /var/lib/jenkins/.ssh/*
+            13_firewall:
+              command: !Sub |
+                sudo firewall-cmd --permanent --add-service=ssh; sudo firewall-cmd --permanent --add-port=8080/tcp; sudo firewall-cmd --reload
+          services:
+            sysvinit:
+              jenkins:
+                enabled: true
+                ensureRunning: true
+        config:
+          packages:
+            yum:
+              firewalld: []
+          commands:
+            01_update:
+              command: yum -y update
+          files:
+            '/etc/cfn/cfn-hup.conf':
+              content: !Sub |
+                [main]
+                stack=${AWS::StackId}
+                region={{region}}
+                interval=1
+              mode: '000400'
+              owner: root
+              group: root
+            '/etc/cfn/hooks.d/cfn-auto-reloader.conf':
+              content: !Sub |
+                [cfn-auto-reloader-hook]
+                triggers=post.update
+                path=Resources.JenkinsInstance.Metadata.AWS::CloudFormation::Init
+                action=/opt/aws/bin/cfn-init --verbose --stack=${AWS::StackName} --region={{region}} --resource=JenkinsInstance
+                runas=root
+          services:
+            sysvinit:
+              cfn-hup:
+                enabled: true
+                ensureRunning: true
+                files:
+                  - '/etc/cfn/cfn-hup.conf'
+                  - '/etc/cfn/hooks.d/cfn-auto-reloader.conf'
+              firewalld:
+                enabled: true
+                ensureRunning: true
+        jenkinsConfig2:
+          packages:
+            yum:
+              wget: []
+              net-tools: []
+              git: []
+              jq: []
+          commands:
+            00_update_yum:
+              command: sudo yum update -y
+            01_epel_repo:
+              command: sudo rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+            02_jenkins_repo:
+              command: sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+            03_install_java_jdk_Amazon_Corretto_17:
+              command: sudo yum install java-17-amazon-corretto-devel -y
+            04_jenkins_key:
+              command: sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+            05_upgrade_yum:
+              command: sudo yum upgrade -y
+            06_jenkins_install:
+              command: sudo yum install -y jenkins
+            07_enable_jenkins:
+              command: sudo systemctl enable jenkins
+              test: '[ -f /etc/init.d/jenkins ]'
+              ignoreErrors: 'true'
+            08_install_jenkins:
+              command: sudo systemctl start jenkins
+              test: '[ -f /etc/init.d/jenkins ]'
+              ignoreErrors: 'true'
+          services:
+            sysvinit:
+              jenkins:
+                enabled: true
+                ensureRunning: true
+    Properties:
+      BlockDeviceMappings:
+        - DeviceName: /dev/sdb
+          Ebs:
+            DeleteOnTermination: true
+            VolumeType: gp2
+            VolumeSize: 20
+      InstanceType: {{ config_jenkins.InstanceType }}
+      SecurityGroupIds:
+        - !GetAtt JenkinsSecurityGroup.GroupId
+      SubnetId: !ImportValue microdevhub-{{ env }}-public-subnet-1
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
+      KeyName: {{ config_jenkins.KeyPairName }}
+      IamInstanceProfile: !Ref JenkinsInstanceProfile
+      ImageId: !FindInMap [AWSRegionArch2AMI, !Ref AWS::Region, !FindInMap [AWSInstanceType2Arch, {{ config_jenkins.InstanceType }}, Arch]]
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash -x
+
+          # Install the files and packages from the metadata
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource JenkinsInstance --region ${AWS::Region}
+
+          # Signal the status from cfn-init
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource
+          JenkinsInstance --region {{region}}
+
+          # Skip the Jenkins upgrade wizard
+          cd /var/lib/jenkins
+          sudo -u jenkins touch jenkins.install.UpgradeWizard.state
+          sudo chmod 777 jenkins.install.UpgradeWizard.state
+          sudo -u jenkins echo "2.0" >> jenkins.install.UpgradeWizard.state
+          sudo -u jenkins mkdir init.groovy.d
+          cd init.groovy.d
+          sudo -u jenkins touch basic-security.groovy
+          sudo chmod 777 basic-security.groovy
+
+          # Sets up Jenkins security by creating a local user admin with password admin and configures the security realm and authorization strategy.
+          cat << 'EOF' > /var/lib/jenkins/init.groovy.d/basic-security.groovy
+          #!groovy
+
+          import jenkins.model.*
+          import hudson.security.*
+
+          println "--> Starting basic-security.groovy script"
+
+          def instance = Jenkins.getInstance()
+
+          println "--> Creating local user 'admin'"
+
+          def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+          hudsonRealm.createAccount('admin','admin')
+          instance.setSecurityRealm(hudsonRealm)
+
+          def strategy = new FullControlOnceLoggedInAuthorizationStrategy()
+          instance.setAuthorizationStrategy(strategy)
+          instance.save()
+
+          println "--> Finished configuring security settings"
+          EOF
+
+          sudo chown jenkins:jenkins /var/lib/jenkins/init.groovy.d/basic-security.groovy
+          sudo chmod 644 /var/lib/jenkins/init.groovy.d/basic-security.groovy
+
+          # Restart Jenkins to apply the new security configuration
+          sudo systemctl restart jenkins
+
+          # Install Jenkins Plugin
+          cd ~/
+          sudo wget http://localhost:8080/jnlpJars/jenkins-cli.jar
+
+          sudo chmod 777 jenkins-cli.jar
+
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin cloudbees-folder
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin antisamy-markup-formatter
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin build-timeout
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin credentials-binding
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin timestamper
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin ws-cleanup
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin gradle
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin ant
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin github-branch-source
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin pipeline-github-lib
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin pipeline-graph-view
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin ssh-slaves
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin matrix-auth
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin pam-auth
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin ldap
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin email-ext
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin mailer
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin dark-theme
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin workflow-job
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin workflow-aggregator
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin Git
+          java -jar jenkins-cli.jar -s http://localhost:8080/ -auth 'admin:admin' -webSocket install-plugin github
+
+          sudo systemctl restart jenkins
+      Tags:
+        - Key: Name
+          Value: "Jenkins-Microdevhub-Instance"
+
+  JenkinsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+
+  RolePolicies:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: root
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action: "*"
+          Resource: "*"
+      Roles:
+      - Ref: JenkinsRole
+
+  JenkinsInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+        - !Ref JenkinsRole
+  
+  JenkinsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP access via port 8080
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '8080'
+          ToPort: '8080'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
+
+Outputs:
+  InstanceId:
+    Description: InstanceId of the newly created EC2 instance
+    Value: !Ref JenkinsInstance
+  PublicDNS:
+    Description: Public DNSName of the newly created EC2 instance
+    Value: !GetAtt [ JenkinsInstance, PublicDnsName]
+  PublicIP:
+    Description: Public IP address of the newly created EC2 instance
+    Value: !GetAtt [ JenkinsInstance, PublicIp]
