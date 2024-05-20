@@ -1,0 +1,15 @@
+---
+- hosts: all
+  gather_facts: true
+  vars:
+    cf_stack_template: "{{ Stack.Template | default('./templates/jenkins_ec2_resource.yml.j2') }}"
+    cf_stack_name: "jenkins-ec2-resource-{{ env }}"
+
+  pre_tasks:
+    - name: create stack facts
+      set_fact:
+        tbd: "placeholder"
+
+  roles:
+    - role: assume_aws_role
+    - role: cloudformation

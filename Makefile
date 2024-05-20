@@ -44,3 +44,8 @@ eks-resource/%:
 	${INFO} "Deploying eks-resource environment $* with Stack.Delete=$(IS_DELETED)..."
 	@ ansible-playbook playbooks/eks_playbook.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
 	${INFO} "Deploying eks-resource complete"
+
+jenkins-ec2-resource/%:
+	${INFO} "Deploying jenkins-ec2-resource environment $* with Stack.Delete=$(IS_DELETED)..."
+	@ ansible-playbook playbooks/jenkins_ec2_resource.yml -e env=$* -e Stack.Delete=$(IS_DELETED) $(FLAGS)
+	${INFO} "Deploying jenkins-ec2-resource complete"

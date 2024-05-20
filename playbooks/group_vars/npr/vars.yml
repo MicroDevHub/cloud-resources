@@ -29,3 +29,9 @@ Config:
     AmiIds:
       Standard: ami-051635ff133c26e68
     Version: "1.29"
+
+  Jenkins:
+    InstanceType: t2.micro
+    KeyPairName: microdevhub
+    TargetAMIId: ami-04f73ca9a4310089f
+    TargetInstanceSize: t2.medium
