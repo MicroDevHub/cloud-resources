@@ -10,3 +10,8 @@ service_configs:
     # Port exposed to the pod - note that nodePort is typically forwarded to this port
     port: 3000
     replicas: 1
+
+  - name: frontend-bookstore
+    container_name: huyhoang1001/client
+    container_tag: latest
+    port: 3000
