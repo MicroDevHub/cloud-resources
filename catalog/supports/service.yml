@@ -1,5 +1,5 @@
 service_configs:
-  - name: mongodb
+  - name: server-mongodb
     container_name: library/mongo
     container_tag: latest
     nodePort: 30001

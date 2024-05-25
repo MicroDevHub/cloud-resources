@@ -1,5 +1,5 @@
 configuration:
   service-bookstore:
-    BOOKS_MONGO_URL: mongodb://books-mongo-srv/books-db
+    BOOKS_MONGO_URL: mongodb://server-mongodb/books-db
     NATS_URL: http://nats-srv:4222
     NATS_CLUSTER_ID: books

@@ -27,11 +27,11 @@ metadata:
   labels:
     app: {{ app_service.name }}
 spec:
-  type: NodePort
+  type: ClusterIP # more detail https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   ports:
-    - name: http-{{app_service.name}}
+    - name: http-{{ app_service.name }}
       protocol: TCP
-      nodePort: {{ app_service.nodePort }}
+      targetPort: {{ app_service.port }}
       port: {{ app_service.port }}
   selector:
     app: {{ app_service.name }}
