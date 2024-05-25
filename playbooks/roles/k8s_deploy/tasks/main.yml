@@ -5,14 +5,14 @@
   # Load service configurations
   - name: Load catalog configurations in {{ env }} environment
     include_vars:
-      file: "../catalog/configurations/{{ env }}/config.yml"
+      file: "{{ confiuration_path }}"
     no_log: true  # To avoid showing the content of the loaded variables in logs
 
 # Generate deployment files
 - block:
   - name: Ensure manifest dir exists
     file:
-      path: "{{ manifest_app_dir }}"  # Specify the path for the directory
+      path: "{{ manifest_app_dir }}"
       state: directory  # Ensure that it is a directory
 
   - name: Init service config
@@ -24,11 +24,11 @@
       catalog_configs:
         - name: services
           dest_suffix: _k8s_deployment_generate.yml
-          file_path: ../catalog/apps/service.yml
+          file_path: "{{ catalog_dir }}/apps/service.yml"
           template: k8s_deployment.yml.j2
         - name: supports
           dest_suffix: _k8s_deployment_supports_generate.yml
-          file_path: ../catalog/supports/service.yml
+          file_path: "{{ catalog_dir }}/supports/service.yml"
           template: k8s_deployment.yml.j2
   
   - name: Generate deployment files
@@ -36,8 +36,9 @@
     loop_control:
       loop_var: catalog_config
     include_tasks: generator.yml
+    no_log: true  # To avoid showing the content of the loaded variables in logs 
 
-  when: deployment_enabled
+  when: not deleted_namepsace
 
 # Apply apps Kubernetes deployment
 - block:
@@ -56,7 +57,7 @@
       namespace: "{{ namespace_name }}"
     loop: "{{ deployment_files.files }}"
 
-  when: deployment_enabled
+  when: not deleted_namepsace
 
 # Remove apps Kubernetes deployment
 - block:
@@ -72,6 +73,7 @@
     set_fact:
       service_catalogs: "{{ service_catalogs | default([]) + item.value | map(attribute='name') | list }}"
     loop: "{{ service_configs | dict2items }}"
+    no_log: true  # To avoid showing the content of the loaded variables in logs 
 
   - name: Check if service exists in Kubernetes and catalog resources
     set_fact:
@@ -83,7 +85,7 @@
       loop_var: app_service
     when: app_service not in service_catalogs
     include_tasks: remove_deployment.yml
-  when: deployment_enabled
+  when: not deleted_namepsace
 
 # Delete namespace Kubernetes
 - block:
@@ -96,4 +98,5 @@
         kind: Namespace
         metadata:
           name: "{{ namespace_name }}"
-  when: not deployment_enabled
+
+  when: deleted_namepsace

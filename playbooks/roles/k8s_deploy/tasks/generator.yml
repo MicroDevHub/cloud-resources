@@ -10,6 +10,6 @@
 
   - name: Generate combined deployment file for {{ catalog_config.name }} folder
     template:
-      src: "./templates/k8s_deployment.yml.j2"
+      src: "./templates/{{ catalog_config.template }}"
       dest: "{{ manifest_app_dir }}/{{ env }}_{{ catalog_config.name }}{{ catalog_config.dest_suffix }}"
 

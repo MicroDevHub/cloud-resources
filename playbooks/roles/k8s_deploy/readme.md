@@ -21,12 +21,12 @@ Generated templates are stored under the deployments folder within the catalog d
 4. Deployment Application:
 - Utilizes the generated deployment files to deploy services, config maps, and deployments onto Kubernetes.
 - Applies the configurations to the EKS cluster.
-5. Deletion Process:
-- If the **deployment_enabled** flag is set to false during playbook execution, a deletion process is triggered.
 - Compares existing resources on EKS with configurations in the catalog.
 Removes any resources from EKS that are not present in the catalog configurations.
+5. Deletion Process:
+- If the **deleted_namespace** flag is set to false during playbook execution, a deletion namespace process is triggered.
 # Note
-- Ensure that the **deployment_enabled** flag is set appropriately during playbook execution to control whether deployment or deletion processes are performed.
+- Ensure that the **deleted_namespace** flag is set appropriately during playbook execution to control whether deployment or deletion processes are performed.
 - It's recommended to review and verify configurations in the catalog directory before initiating deployment to avoid unintended resource deletion.
 - For detailed configuration options and customization, refer to the playbook and associated configuration files.
 # Contributing
