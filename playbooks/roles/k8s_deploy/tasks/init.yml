@@ -8,6 +8,7 @@
     set_fact:
       namespace_name: "{{ Stack.Namespace if Stack.Namespace | length > 0 else env }}"
       deployment_enabled: "{{ Stack.DeploymentEnabled if Stack.DeploymentEnabled else True }}"
+
   - name: install pre-requisites
     pip:
       name:

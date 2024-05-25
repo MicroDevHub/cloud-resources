@@ -8,24 +8,54 @@
       file: "../catalog/configurations/{{ env }}/config.yml"
     no_log: true  # To avoid showing the content of the loaded variables in logs
 
-# Apply apps Kubernetes deployment
+# Generate deployment files
 - block:
   - name: Ensure manifest dir exists
     file:
       path: "{{ manifest_app_dir }}"  # Specify the path for the directory
       state: directory  # Ensure that it is a directory
 
-  - name: Generate combined deployment file
-    template:
-      src: "./templates/k8s_deployment.yml.j2"
-      dest: "{{ manifest_app_dir }}/{{ env }}_k8s_deployment_generate.yml"
+  - name: Init service config
+    set_fact:
+      service_configs: {}
 
-  - name: Apply apps Kubernetes deployment
+  - name: create stack variables
+    set_fact:
+      catalog_configs:
+        - name: services
+          dest_suffix: _k8s_deployment_generate.yml
+          file_path: ../catalog/apps/service.yml
+          template: k8s_deployment.yml.j2
+        - name: supports
+          dest_suffix: _k8s_deployment_supports_generate.yml
+          file_path: ../catalog/supports/service.yml
+          template: k8s_deployment.yml.j2
+  
+  - name: Generate deployment files
+    loop: "{{ catalog_configs }}"
+    loop_control:
+      loop_var: catalog_config
+    include_tasks: generator.yml
+
+  when: deployment_enabled
+
+# Apply apps Kubernetes deployment
+- block:
+  - name: Find all deployment files in the directory
+    find:
+      paths: "{{ manifest_app_dir }}"
+      patterns: "*.yml"  # Adjust the pattern as needed
+      recurse: no
+    register: deployment_files
+
+  - name: Apply Kubernetes deployments
     kubernetes.core.k8s:
       kubeconfig: "{{ kubeconfig_file }}"
       state: present
-      src: "{{ manifest_app_dir }}/{{ env }}_k8s_deployment_generate.yml"
+      src: "{{ item.path }}"
       namespace: "{{ namespace_name }}"
+    loop: "{{ deployment_files.files }}"
+
   when: deployment_enabled
 
 # Remove apps Kubernetes deployment
@@ -38,10 +68,14 @@
       namespace: "{{ namespace_name }}"
     register: k8s_resources
 
+  - name: Extract names from dictionaries
+    set_fact:
+      service_catalogs: "{{ service_catalogs | default([]) + item.value | map(attribute='name') | list }}"
+    loop: "{{ service_configs | dict2items }}"
+
   - name: Check if service exists in Kubernetes and catalog resources
     set_fact:
       service_exists: "{{ k8s_resources.resources | map(attribute='metadata.name') | list }}"
-      service_catalogs: "{{ service_configs | map(attribute='name') | list }}"
 
   - name: Loop through existing services and remove if not found in catalog
     loop: "{{ service_exists }}"
@@ -49,4 +83,17 @@
       loop_var: app_service
     when: app_service not in service_catalogs
     include_tasks: remove_deployment.yml
+  when: deployment_enabled
+
+# Delete namespace Kubernetes
+- block:
+  - name: Delete namespace
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: absent
+      definition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: "{{ namespace_name }}"
   when: not deployment_enabled

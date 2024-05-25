@@ -1,11 +1,9 @@
-# This Cloudformation template will creae following modules
-# VPC, 2-public subnest, InternetGateway, 2 private subnets, 2 Persistence subnets (private)
+# This Cloudformation template will create following modules
 # EKS ckuster with One node group
-# One postgres rds
 {% set config_eks = Config.EKS %}
 
 AWSTemplateFormatVersion: '2010-09-09'
-Description: EKS cluster using a VPC with two public subnets
+Description: EKS cluster using a VPC with two private subnets
 Parameters:
   EKSClusterName:
     Type: String

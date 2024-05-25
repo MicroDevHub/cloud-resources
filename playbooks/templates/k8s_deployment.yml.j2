@@ -1,6 +1,12 @@
-# THIS FILE IS AUTO-GENERATED, PLEASE DO NOT EDIT
+# AUTO-GENERATED FILE - DO NOT EDIT
+# Presently, we are encountering an issue concerning the synchronization between ConfigMaps, Secrets, and deployments.
+# Our aim is to monitor any alterations in ConfigMaps and/or Secrets, and subsequently execute a rolling upgrade on the relevant resources,
+# including DeploymentConfig, Deployment, DaemonSet, StatefulSet, and Rollout.
+# However, this functionality is not yet fully implemented in Kubernetes
+# (currently in progress, see https://github.com/kubernetes/kubernetes/issues/22368).
+# As a temporary solution, we may consider utilizing https://github.com/stakater/Reloader/. (NOT CURRENTLY IMPLEMENTED)
 
-{% for app_service in service_configs %}
+{% for app_service in service_configs[catalog_config.name] %}
 {% if app_service.name in configuration %}
 ---
 apiVersion: v1
@@ -52,17 +58,17 @@ spec:
       containers:
         - image: "{{ Sts.DockerRegistry }}/{{ app_service.container_name }}:{{ app_service.container_tag }}"
           name: {{ app_service.name }}
+{% if app_service.name in configuration %}
           env:
-            - name: CONFIG_MAP_KEY
-              value: /etc/config/{{ app_service.name }}.yaml
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/config
-              readOnly: true
-      volumes:
-        - name: config-volume
-          configMap:
-            name: {{ app_service.name }}
+{% for key, value in configuration[app_service.name].items() %}
+            - name: {{ key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ app_service.name }}
+                  key: {{ key }}
+{% endfor %}
+{% endif %}
+
 ---
 apiVersion: v1
 kind: ServiceAccount

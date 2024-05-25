@@ -1,8 +1,7 @@
 ---
 - hosts: all
   gather_facts: yes
-  vars_files:
-    - ../catalog/apps/service.yml
+
   vars:
     kubeconfig_file: "~/.kube/config"
     deployment_file: "./templates/k8s_deployment.yml.j2"
