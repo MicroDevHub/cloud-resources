@@ -1,16 +1,44 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: MySQL RDS AWS
+Description: PostgreSQL RDS AWS
 
 Resources:
- MicroMySQL:
-  Type: AWS::RDS::DBInstance
-  Properties:
-    DBName: quan
-    DBInstanceClass: db.m5.large
-    Engine: mysql
-    AllocatedStorage: 20
-    EngineVersion: 8.0
-    MasterUsername: microdevhud
-    MasterUserPassword: 12345678456
-  UpdateReplacePolicy: Delete
-  DeletionPolicy: Delete
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS instance
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-RDSSecurityGroup"
+
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS DB instance
+      SubnetIds:
+        - !ImportValue microdevhub-{{ env }}-private-subnet-1
+        - !ImportValue microdevhub-{{ env }}-private-subnet-2
+      Tags:
+        - Key: Name
+          Value: RDSSubnetGroup    
+
+  MicroPostgreSQL:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: microdevhub
+      DBInstanceClass: db.mt3.micro
+      Engine: postgresql
+      AllocatedStorage: 20
+      EngineVersion: 15.0
+      MasterUsername: microdevhub
+      MasterUserPassword: 12345678456
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
