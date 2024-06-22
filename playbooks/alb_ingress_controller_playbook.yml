@@ -1,0 +1,8 @@
+---
+- hosts: all
+  gather_facts: yes
+  
+  roles:
+    - role: assume_aws_role
+    - role: check_prerequisites
+    - role: alb_ingress_controller

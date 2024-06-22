@@ -3,15 +3,11 @@ service_configs:
   - name: service-bookstore
     # Name of our container image within our registry 
     container_name: huyhoang1001/books
-    # Tag of our image within our registry 
     container_tag: latest
-    # Port exposed on kubernetes worker
-    nodePort: 30000
-    # Port exposed to the pod - note that nodePort is typically forwarded to this port
     port: 3000
     replicas: 1
 
   - name: frontend-bookstore
-    container_name: huyhoang1001/client
+    container_name: nginx
     container_tag: latest
-    port: 3000
+    port: 80

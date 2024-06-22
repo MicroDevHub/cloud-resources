@@ -1,0 +1,39 @@
+
+- block:
+  # Load configuration
+  - import_tasks: init.yml
+
+- block:
+  - name: Create Service Account for ALB Ingress Controller
+    k8s:
+      state: present
+      definition: "{{ lookup('template', './templates/deployments/service_account.yml.j2') }}"
+
+- block:
+  - name: Associate IAM OIDC Provider with the EKS cluster
+    command: eksctl utils associate-iam-oidc-provider --cluster {{ cluster_name }} --approve
+    register: oidc_association
+    failed_when: oidc_association.rc != 0
+
+  - name: Apply ALB Ingress Controller CRDs
+    command: kubectl apply -k "github.com/aws/eks-charts/stable/aws-load-balancer-controller//crds?ref=master"
+
+  - name: Retrieve the VPC ID for the EKS cluster
+    command: >
+      aws eks describe-cluster --name {{ cluster_name }} --region {{ Sts.Region }} --query "cluster.resourcesVpcConfig.vpcId" --output text
+    register: vpc_id_result
+    failed_when: vpc_id_result.rc != 0
+
+  - name: Set the VPC ID fact
+    set_fact:
+      vpc_id: "{{ vpc_id_result.stdout }}"  
+
+  - name: Install ALB Ingress Controller using Helm
+    command: >
+      helm install aws-load-balancer-controller eks/aws-load-balancer-controller
+      --set clusterName={{ cluster_name }}
+      --namespace={{ namespace_name }}
+      --set serviceAccount.create=false
+      --set region={{ Sts.Region }}
+      --set vpcId={{ vpc_id }}
+      --set serviceAccount.name={{ service_account_name }}

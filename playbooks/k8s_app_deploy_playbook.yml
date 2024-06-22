@@ -4,7 +4,7 @@
 
   vars:
     kubeconfig_file: "~/.kube/config"
-    deployment_file: "./templates/k8s_deployment.yml.j2"
+    deployment_file: "./templates/deployments/k8s_deployment.yml.j2"
     catalog_dir: "../catalog"
 
   tasks:

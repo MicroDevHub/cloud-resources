@@ -1,0 +1,48 @@
+---
+- name: Check if kubectl is installed
+  command: kubectl version --client
+  register: kubectl_check
+  ignore_errors: yes
+
+- name: Install kubectl if not present
+  apt:
+    name: kubectl
+    state: present
+  when: kubectl_check.failed
+  tags: kubectl
+
+- name: Configure kubectl
+  command: aws eks --region {{ Sts.Region }} update-kubeconfig --name microdevhub-{{ env }}-eks
+
+- name: Check if awscli is installed
+  command: aws --version
+  register: awscli_check
+  ignore_errors: yes
+
+- name: Install awscli if not present
+  apt:
+    name: awscli
+    state: present
+  when: awscli_check.failed
+  tags: awscli
+
+- name: Check if helm is installed
+  command: helm version
+  register: helm_check
+  ignore_errors: yes
+
+- name: Install helm if not present
+  shell: |
+    curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  when: helm_check.failed
+  tags: helm
+
+- name: Check if eksctl is installed
+  command: eksctl version
+  register: eksctl_check
+  failed_when: eksctl_check.rc != 0
+  ignore_errors: yes
+
+- name: Install eksctl if not present
+  shell: curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp && sudo mv /tmp/eksctl /usr/local/bin
+  when: eksctl_check.rc != 0

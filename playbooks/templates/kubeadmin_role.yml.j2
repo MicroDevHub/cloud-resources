@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  KubeAdminRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: "KubeAdmin"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 'eks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: "KubeAdminPolicy"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'eks:DescribeCluster'
+                Resource: '*'
+  KubeAdminRolePolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties:
+      PolicyName: "KubeAdminClusterPolicy"
+      Roles:
+        - !Ref KubeAdminRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - 'eks:*'
+            Resource: '*'
+Outputs:
+  KubeAdminRoleArn:
+    Value: !GetAtt KubeAdminRole.Arn

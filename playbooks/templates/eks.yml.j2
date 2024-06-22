@@ -5,10 +5,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: EKS cluster using a VPC with two private subnets
 Parameters:
-  EKSClusterName:
-    Type: String
-    Description: Name of k8s cluster
-    Default: eks-cluster
   NumWorkerNodes:
     Type: Number
     Description: Number of worker nodes to create
@@ -141,6 +137,16 @@ Resources:
       IpProtocol: tcp
       FromPort: 443
       ToPort: 443
+
+  WorkerNodesIngressFromControlPlaneAlb:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      Description: Allow access from control plane to webhook port of AWS load balancer controller
+      GroupId: !Ref WorkerNodesSecurityGroup
+      SourceSecurityGroupId: !Ref ControlPlaneSecurityGroup
+      IpProtocol: tcp
+      FromPort: 9443
+      ToPort: 9443
 
   #============================================================================#
   # Worker nodes (auto-scaling group)

@@ -1,0 +1,17 @@
+- block:
+  - name: Create sts variable
+    set_fact:
+      Sts: "{{ Sts | default({}) | combine((vars['hostvars'][env] | dotted_dict(paths=['Sts.'])).get('Sts') or {}, recursive=True) }}"
+
+  - name: Set config
+    set_fact:
+      service_account_name: "aws-load-balancer-controller"
+      namespace_name: "kube-system"
+      ref_role_name: "ALBIngressControllerRole"
+      cluster_name: "microdevhub-{{ env }}-eks"
+
+  - name: Add eks helm repo
+    command: helm repo add eks https://aws.github.io/eks-charts
+
+  - name: Update helm repo
+    command: helm repo update
