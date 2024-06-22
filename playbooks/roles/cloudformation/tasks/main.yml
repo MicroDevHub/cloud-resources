@@ -19,3 +19,4 @@
 - block:
     - import_tasks: delete.yml
   when: cf_delete_stack
+  

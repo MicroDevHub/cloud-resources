@@ -1,0 +1,11 @@
+---
+- hosts: all
+  name: Create IAM Role for KubeAdmin
+  gather_facts: yes
+  vars:
+    cf_stack_template: "{{ Stack.Template | default('./templates/kubeadmin_role.yml.j2') }}"
+    cf_stack_name: "kubeadmin-role-{{ env }}"
+
+  roles:
+    - role: assume_aws_role
+    - role: cloudformation

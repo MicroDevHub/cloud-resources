@@ -1,0 +1,15 @@
+- block:
+  - name: Load config files from external files
+    include_vars:
+      file: "{{ catalog_config.file_path }}"
+      name: config_var
+
+  - name: Combine catalog config into a configuration variable
+    set_fact:
+      service_configs: "{{ service_configs | combine({ catalog_config.name: config_var.service_configs }) }}"
+
+  - name: Generate combined deployment file for {{ catalog_config.name }} folder
+    template:
+      src: "./templates/deployments/{{ catalog_config.template }}"
+      dest: "{{ manifest_app_dir }}/{{ env }}_{{ catalog_config.name }}{{ catalog_config.dest_suffix }}"
+

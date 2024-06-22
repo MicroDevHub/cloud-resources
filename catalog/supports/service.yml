@@ -1,0 +1,7 @@
+service_configs:
+  - name: server-mongodb
+    container_name: library/mongo
+    container_tag: latest
+    nodePort: 30001
+    port: 27017
+    replicas: 1

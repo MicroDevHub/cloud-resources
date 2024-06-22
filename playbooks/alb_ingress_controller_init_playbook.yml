@@ -1,0 +1,38 @@
+---
+- hosts: all
+  gather_facts: yes
+  vars:
+    cf_stack_template: "{{ Stack.Template | default('./templates/alb_ingress_role.yml.j2') }}"
+    cf_stack_name: "alb-ingress-role-{{ env }}"
+
+  pre_tasks:
+    - name: Get OIDC provider URL
+      command: >
+        aws eks describe-cluster
+        --name {{ cluster_name }}
+        --region {{ region }}
+        --query "cluster.identity.oidc.issuer"
+        --output text
+      register: oidc_provider_url
+      failed_when: oidc_provider_url.rc != 0
+
+    - name: Set OIDC provider URL fact
+      set_fact:
+        oidc_url: "{{ oidc_provider_url.stdout }}"
+
+    - name: Print OIDC provider URL
+      debug:
+        msg: "OIDC Provider URL: {{ oidc_url }}"
+
+    # - name: Assume AWS Role (if using assume_aws_role role)
+    #   include_role:
+    #     name: assume_aws_role
+    #   vars:
+    #     assume_role_arn: "arn:aws:iam::{{ account_id }}:role/YourRoleName"
+    #     region: "{{ region }}"
+
+  roles:
+    - role: assume_aws_role
+    - role: cloudformation
+      vars:
+        Stack: {Inputs: { OIDCProviderUrl: "{{ oidc_url }}" }}

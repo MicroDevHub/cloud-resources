@@ -1,0 +1,48 @@
+---
+- hosts: all
+  name: Create IAM Role for KubeAdmin
+  gather_facts: yes
+
+  roles:
+    - role: assume_aws_role
+    - role: check_prerequisites
+
+  tasks:
+    - name: Get current aws-auth ConfigMap
+      command: >
+        kubectl get configmap aws-auth -n kube-system -o yaml
+      register: aws_auth_cm
+      failed_when: aws_auth_cm.rc != 0
+
+    - name: Parse existing mapRoles from aws-auth ConfigMap
+      set_fact:
+        map_roles: "{{ aws_auth_cm.stdout | from_yaml | json_query('data.mapRoles') | from_yaml }}"
+
+    - name: Add KubeAdmin role to mapRoles
+      set_fact:
+        new_map_roles: >
+          {{
+            map_roles + [{
+              'rolearn': "arn:aws:iam::{{ Sts.AccountId }}:role/KubeAdmin",
+              'username': 'kubeadmin',
+              'groups': ['system:masters']
+            }]
+          }}
+
+    - name: Convert new mapRoles to YAML
+      set_fact:
+        new_map_roles_yaml: "{{ new_map_roles | to_yaml }}"
+
+    - name: Update aws-auth ConfigMap with new mapRoles
+      template:
+        src: templates/deployments/aws-auth-configmap.yaml.j2
+        dest: /tmp/aws-auth-configmap.yaml
+
+    - name: Convert new mapRoles to YAML
+      set_fact:
+        new_map_roles_yaml: "{{ new_map_roles | to_yaml }}"
+
+    - name: Apply updated aws-auth ConfigMap
+      k8s:
+        state: present
+        definition: "{{ lookup('file', '/tmp/aws-auth-configmap.yaml') }}"

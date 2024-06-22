@@ -1,0 +1,13 @@
+service_configs:
+  # Variabled specific to our app or service
+  - name: service-bookstore
+    # Name of our container image within our registry 
+    container_name: huyhoang1001/books
+    container_tag: latest
+    port: 3000
+    replicas: 1
+
+  - name: frontend-bookstore
+    container_name: nginx
+    container_tag: latest
+    port: 80

@@ -71,3 +71,38 @@ Resources:
 {% endif %}
 {% endif %}
 {% endfor %}
+
+  ECRReadAccessPolicy:
+    Type: 'AWS::IAM::Policy'
+    Properties: 
+      PolicyName: 'ECRReadAccessPolicy'
+      PolicyDocument: 
+        Version: '2012-10-17'
+        Statement: 
+          - Effect: 'Allow'
+            Action: 
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:GetAuthorizationToken'
+            Resource: '*'
+      Roles:
+        - !Ref ECRReadOnlyRole
+
+  ECRReadOnlyRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'ECRReadOnlyRole'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service: 'eks.amazonaws.com'
+            Action: 'sts:AssumeRole'
+      Path: '/'
+
+Outputs:
+  ECRRoleArn:
+    Description: 'The ARN of the ECR read-only IAM role'
+    Value: !GetAtt ECRReadOnlyRole.Arn

@@ -49,7 +49,7 @@ To mitigate security risks associated with the 'ansible.cfg' file in the current
 follow the guidelines provided in the Ansible documentation.
 
 If running locally, resolve the issue by exporting:
-$ export ANSIBLE_CONFIG=/mnt/d/working/micro-dev-hub/cloud-resources/ansible.cfg
+$ export ANSIBLE_CONFIG=/mnt/d/working/microdevhub/cloud-resources/ansible.cfg
 ```
 
 ## How to add and run a new playbook

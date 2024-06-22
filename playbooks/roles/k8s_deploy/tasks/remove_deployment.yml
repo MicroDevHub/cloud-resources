@@ -1,0 +1,24 @@
+- block:
+  - name: Remove Deployment if service not found in catalog
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: absent
+      kind: Deployment
+      name: "{{ app_service }}"
+      namespace: "{{ namespace_name }}"
+
+  - name: Remove Service if service not found in catalog
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: absent
+      kind: Service
+      name: "{{ app_service }}"
+      namespace: "{{ namespace_name }}"
+
+  - name: Remove ConfigMap if service not found in catalog
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      state: absent
+      kind: ConfigMap
+      name: "{{ app_service }}"
+      namespace: "{{ namespace_name }}"

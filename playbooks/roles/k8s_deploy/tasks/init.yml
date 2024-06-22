@@ -1,0 +1,26 @@
+---
+- block:
+  - name: set stack config
+    set_fact:
+      Stack: "{{ Stack | default({}) | combine((vars['hostvars'][env] | dotted_dict(paths=['Stack.'])).get('Stack') or {}, recursive=True) }}"
+
+  - name: set namspace config
+    set_fact:
+      namespace_name: "{{ Stack.Namespace if Stack.Namespace | length > 0 else env }}"
+      deleted_namepsace: "{{ Stack.DeletedNamespace if Stack.DeletedNamespace else false }}"
+      manifest_app_dir: "{{ catalog_dir }}/deployments"
+      confiuration_path: "{{ catalog_dir }}/configurations/{{ env }}/config.yml"
+  - name: install pre-requisites
+    pip:
+      name:
+        - openshift
+        - pyyaml
+        - kubernetes 
+
+  - name: Create a k8s namespace {{ namespace_name }}
+    kubernetes.core.k8s:
+      kubeconfig: "{{ kubeconfig_file }}"
+      name: "{{ namespace_name }}"
+      api_version: v1
+      kind: Namespace
+      state: present

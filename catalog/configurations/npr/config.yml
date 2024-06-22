@@ -1,0 +1,8 @@
+configuration:
+  service-bookstore:
+    BOOKS_MONGO_URL: mongodb://server-mongodb/books-db
+    NATS_URL: http://nats-srv:4222
+    NATS_CLUSTER_ID: books
+
+  frontend-bookstore:
+    INGRESS_URL: http://ingress-nginx-controller.ingress-nginx.svc.cluster.local

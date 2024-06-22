@@ -31,6 +31,8 @@ Resources:
           Value: 1
         - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
           Value: shared
+        - Key: kubernetes.io/cluster/microdevhub-{{ env }}-eks
+          Value: owned
 
   NatGateway{{ loop.index }}EIP:
     Type: AWS::EC2::EIP
@@ -67,6 +69,8 @@ Resources:
           Value: 1
         - Key: !Sub "kubernetes.io/cluster/${AWS::StackName}"
           Value: shared
+        - Key: kubernetes.io/cluster/microdevhub-{{ env }}-eks
+          Value: owned
 
   PrivateRouteTable{{ loop.index }}:
     Type: AWS::EC2::RouteTable
