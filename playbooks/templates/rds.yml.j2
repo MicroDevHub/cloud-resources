@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: PostgreSQL RDS AWS
+
+Resources:
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS instance
+      VpcId: !ImportValue microdevhub-{{ env }}-vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-RDSSecurityGroup"
+
+  RDSSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS DB instance
+      SubnetIds:
+        - !ImportValue microdevhub-{{ env }}-private-subnet-1
+        - !ImportValue microdevhub-{{ env }}-private-subnet-2
+      Tags:
+        - Key: Name
+          Value: RDSSubnetGroup    
+
+  MicroPostgreSQL:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: microdevhub
+      DBInstanceClass: db.t3.micro
+      Engine: postgres
+      AllocatedStorage: 20
+      MasterUsername: microdevhub
+      MasterUserPassword: 12345678456
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      DBSubnetGroupName: !Ref RDSSubnetGroup
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
