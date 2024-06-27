@@ -6,7 +6,7 @@
 # that should be assumed to run your provisioning tasks
 # e.g. Sts.Role: arn:aws:iam::012345678901:role/admin
 # Sts.Role: <ARN of your IAM role>
-Sts.Role: arn:aws:iam::598658802055:role/micro-dev-hub-role
+Sts.Role: arn:aws:iam::236925568009:role/anisble-role
 Sts.Region: 'ap-southeast-2'
 
 # VPC Configuration
